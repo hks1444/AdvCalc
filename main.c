@@ -8,6 +8,7 @@ char* parseAfterLeftStrip (int i, char *side, bool *error);
 
 int main() {
     //yan yana char ve sayı durumunu handle'la
+        //isalphanum yazan kısmı düzenle
     //error çözümlerini elinden geldiğince stack'e bırakma
     char line[256];
     while (fgets(line, sizeof(line), stdin)) {
@@ -142,34 +143,86 @@ int main() {
                 }
                 if (a>0) {
                     item[a] = '\0';
-                    if (strcmp(item,"xor") == 0 || strcmp(item,"not") == 0) {
-                        //BURADA KAHRAMANLIK YAPMAYA GİRİŞMEDEN
-                        //XOR YERİNE #
-                        //NOT YERİNE % VS DEYİP OPERATOR LİSTESİNE GÖNDERİRİZ
-                        //SHUNTING-YARD'DA HALLEDERİZ
-
-                        //yeni bir pointer yaratıp onu ileri götürebiliriz
-                        //yeni yaratmanın sebebi: diğer türlü saçma sapan sorun çıkabilir
-                        //yeni pointer parantezse
-                            //içerideki şeylere xor dedector yapmamız lazım
-                        //yeni pointer parantez değilse
-                            //error
-
-                        //TODO LİSTESİ
-                        //virgül yerine belirleyeceğin karakteri at
-                        //iç içe ise recursive olması lazım galibe, o nasıl olacak
-                    } else if (strcmp(item,"lr") == 0 || strcmp(item,"rr") == 0 || strcmp(item,"rs") == 0 || strcmp(item,"ls") == 0) {
-                        //bunu xor'dan ayrı yazmamın sebebi pointeri orada 3 burada 2 kez ilerletecek olmamız
+                    if (strcmp(item,"xor") == 0) {
+                        char *p2 = p;
+                        p2++;
+                        if (strcmp(p2,"(") != 0) {
+                            printf("Error13!\n");
+                            error = true;
+                            break;
+                        } else {
+                            //operator listesine ekleme yap
+                        }
+                    } else if (strcmp(item,"not") == 0){
+                        char *p2 = p;
+                        p2++;
+                        if (strcmp(p2,"(") != 0) {
+                            printf("Error9!\n");
+                            error = true;
+                            break;
+                        } else {
+                            //operator listesine ekleme yap
+                        }
+                    } else if (strcmp(item,"lr") == 0) {
+                        char *p2 = p;
+                        p2++;
+                        if (strcmp(p2,"(") != 0) {
+                            printf("Error10!\n");
+                            error = true;
+                            break;
+                        } else {
+                            //operator listesine ekleme yap
+                        }
+                    } else if (strcmp(item,"rr") == 0){
+                        char *p2 = p;
+                        p2++;
+                        if (strcmp(p2,"(") != 0) {
+                            printf("Error11!\n");
+                            error = true;
+                            break;
+                        } else {
+                            //operator listesine ekleme yap
+                        }
+                    }
+                    else if (strcmp(item,"rs") == 0){
+                        char *p2 = p;
+                        p2++;
+                        if (strcmp(p2,"(") != 0) {
+                            printf("Error12!\n");
+                            error = true;
+                            break;
+                        } else {
+                            //operator listesine ekleme yap
+                        }
+                    }
+                    else if (strcmp(item,"ls") == 0){
+                        char *p2 = p;
+                        p2++;
+                        if (strcmp(p2,"(") != 0) {
+                            printf("Error8!\n");
+                            error = true;
+                            break;
+                        } else {
+                        //operator listesine ekleme yap
+                        }
                     } else {
                         //o zaman variable
+                        char *p2 = p;
+                        p2++;
+                        if (strcmp(p2,"(") == 0) {
+                            printf("Error14!\n");
+                            error = true;
+                            break;
+                        } else {
+                            //sayı listesine ekleme yap
+                        }
+                    }
+                    if (error) {
+                        continue;
                     }
                     array[z] = item;
                     z++;
                 }
-
-                //xor ise sonra parantez olmalı
-                //xor değil ise sonra parantez olamaz
-                //itemi gideceği yere ekle
                 a=0;
                 while (isdigit(*p)) {
                     item[a++] = *p;
