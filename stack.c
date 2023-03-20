@@ -16,11 +16,38 @@ Stack *Stack_construct() {
     stack->size=0;
     return stack;
 }
+
+typedef struct {
+    Variable *content;
+    int size;
+    int current;
+} Queue;
+Queue *Queue_construct() {
+    Queue *queue = malloc(sizeof(Queue));
+    queue->content = calloc(cap, sizeof(Variable));
+    queue->size=0;
+    queue->current=0;
+    return queue;
+}
 void push(Stack* stack,char* key){
   stack->content[stack->size++].name = key;
 }
 char* pop(Stack* stack){
   return stack->content[--(stack->size)].name;
+}
+void enqueue(Queue* queue,char* key){
+  queue->content[queue->size++].name = key;
+  if(queue->size==cap){
+    queue->size=0;
+  } 
+}
+char* dequeue(Queue* queue){
+  char * temp;
+  temp = queue->content[queue->current++].name;
+  if(queue->current==cap){
+    queue->current=0;
+  } 
+  return temp;
 }
 int main() {
   Stack *s1 = Stack_construct();
@@ -33,6 +60,11 @@ int main() {
   printf("%s\n", pop(s1));
   printf("%s\n", pop(s2));
   printf("%s\n", pop(s2));
+  Queue *q1 = Queue_construct();
+  enqueue(q1,"a");
+  enqueue(q1,"b");
+  printf("%s\n", dequeue(q1));
+  printf("%s\n", dequeue(q1));
   return 0;
 }
 // typedef enum{
