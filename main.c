@@ -27,10 +27,10 @@ int main() {
         error = false;
         equals = false;
         printf("> ");
-        if (fgets(lineFull, sizeof(lineFull), stdin) == NULL) { //bu niye böyle anlamadım, hoca böyle yazdı
+        if (fgets(lineFull, sizeof(lineFull), stdin) == NULL) {
             break;
         } else {
-            line = strtok(lineFull, "%"); //burada line objesi değişmemiş olabilir, bunu kontrol et
+            line = strtok(lineFull, "%");
             if (strchr(line, '=')) {
                 equals = true;
             }
@@ -44,9 +44,7 @@ int main() {
         }
         char *variable;
         char *variable2;
-        if (right != NULL //|| strcmp(right, "\n")==0
-        ) {
-        //if (strcmp(left, lineFull) == 0) {
+        if (right != NULL) {
             //! BU IF'İN İÇİNDE BULDUĞUMUZ DEĞER variable DEĞİŞKENİNE HASHLENECEK
             int i = 0;
             int length = strlen(left);
@@ -63,8 +61,6 @@ int main() {
             }
             variable = strtok(left, " ");
             variable2 = strtok(NULL, " ");
-            //sağdan strip durumunu çözmemiz lazım
-            //bunu önceden yazmışım ama bir hata vermiyor şu anda
             if (variable == NULL) {
                 printf("Error18!\n");
             }
@@ -99,7 +95,6 @@ int main() {
                 printf("Error!\n");
                 continue;
             }
-            //buradaki atama nasıl olacak
             char *nsRight = parseAfterLeftStrip(k, right, &error);
             if (error) {
                 printf("Error5!\n");
@@ -259,19 +254,13 @@ int main() {
                 }
             }
         }
-
-
         if (right == NULL || strcmp(right, "\n") == 0) {
             if (equals) {
                 printf("Error!\n");
                 continue;
             }
-            //DİĞER BLOKTAKİ KOD BİTİNCE BURAYA DA GELECEK
-            //! RIGHT VE ONUNLA ALAKALI HER ŞEYİ DEĞİŞTİRMEMİZ LAZIM
-
             //RHS'DE BURADA YAPTIĞIMIZ ŞEYİN AYNISI YAPILACAK
             //TEK FARK BURADA SONUÇ PRINT, ORADA ASSIGN
-            //SOL TARAFI OKUMA VE HATA KONTROL ETME KISMI BURASI
             int i = 0;
             int length = strlen(left);
             while (left[i] == ' ') {
@@ -316,11 +305,9 @@ int main() {
                             strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
                             type = 4;
                             if (*p != '(') {
-                                //printf("Error13!\n");
                                 error = true;
                                 break;
                             } else {
-                                //operator listesine ekleme yap
                                 char *p2 = p;
                                 p2++;
                                 int parenthesis = 1;
@@ -356,7 +343,6 @@ int main() {
                                 }
                             }
                         } else {
-                            //variable
                             type = 1;
                             if (*p == '(') {
                                 error = true;
@@ -451,8 +437,6 @@ int main() {
         }
     }
 }
-//boş string returnunu değerlendirmemiz lazım
-//error da olabilir, düz devam da
 char* parseAfterLeftStrip (int i, char *side, bool *error) {
     int len = strlen(side);
     bool ch = false;
@@ -479,7 +463,7 @@ char* parseAfterLeftStrip (int i, char *side, bool *error) {
             return "";
         }
     }
-    char *equation = malloc(strlen(side)-space); //+1 falan olabilir
+    char *equation = malloc(strlen(side)-space);
     equation[0] = '\0';
     char *p = strtok(side, " ");
     while (p != NULL) {
