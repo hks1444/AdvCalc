@@ -43,7 +43,7 @@ int main() {
         char *variable;
         char *variable2;
         if (right != NULL) {
-            //SOL TARAFI OKUMA VE HATA KONTROL ETME KISMI BURASI
+            //! BU IF'İN İÇİNDE BULDUĞUMUZ DEĞER variable DEĞİŞKENİNE HASHLENECEK
             int i = 0;
             int length = strlen(left);
             while (left[i] == ' ') {
@@ -132,7 +132,6 @@ int main() {
                                 error = true;
                                 break;
                             } else {
-                                //operator listesine ekleme yap
                                 char *p2 = p;
                                 p2++;
                                 int parenthesis = 1;
@@ -173,12 +172,16 @@ int main() {
                             if (*p == '(') {
                                 error = true;
                                 break;
-                            } else {
-                                //sayı listesine ekleme yap
                             }
                         }
                         if (error) {
                             break;
+                        } else {
+                            if (type == 4) {
+                               //! FONKSİYONU EKLENMESİ GEREKEN YERE EKLE
+                            } else if (type == 1) {
+                                //! VARIABLE'I EKLENMESİ GEREKEN YERE EKLE
+                            }
                         }
                         continue;
                     }
@@ -194,6 +197,7 @@ int main() {
                     if (a > 0) {
                         type = 2;
                         item[a] = '\0';
+                        //! SAYIYI EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
                     while (*p == '(') {
@@ -209,6 +213,7 @@ int main() {
                     if (a>0) {
                         type = 5;
                         item[a] = '\0';
+                        //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
                     while (*p == ')') {
@@ -224,6 +229,7 @@ int main() {
                     if (a>0) {
                         type = 6;
                         item[a] = '\0';
+                        //! KAPALI PARANTEZ EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
                     while (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
@@ -238,6 +244,7 @@ int main() {
                     if (a==1) {
                         type = 3;
                         item[a] = '\0';
+                        //! DİĞER OPERATÖRLER EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     } else if (a!=1) {
                         error =true;
@@ -350,12 +357,17 @@ int main() {
                             if (*p == '(') {
                                 error = true;
                                 break;
-                            } else {
-                                //sayı listesine ekleme yap
                             }
                         }
                         if (error) {
                             break;
+                        }  else {
+                            if (type == 4) {
+                                //! FONKSİYONU EKLENMESİ GEREKEN YERE EKLE
+                            } else if (type == 1) {
+                                //! VARIABLE'I EKLENMESİ GEREKEN YERE EKLE
+                                //! İSTERSEN HASH'TEN DEĞER ÇEKİP SAYIYI ATACAĞIN YER BURAYI
+                            }
                         }
                         continue;
                     }
@@ -371,8 +383,7 @@ int main() {
                     if (a > 0) {
                         type = 2;
                         item[a] = '\0';
-                        //array[z] = item;
-                        //z++;
+                        //! SAYIYI EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
                     while (*p == '(') {
@@ -388,8 +399,7 @@ int main() {
                     if (a > 0) {
                         type = 5;
                         item[a] = '\0';
-                        //array[z] = item;
-                        //z++;
+                        //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
                     while (*p == ')') {
@@ -405,8 +415,7 @@ int main() {
                     if (a > 0) {
                         type = 6;
                         item[a] = '\0';
-                        //array[z] = item;
-                        //z++;
+                        //! KAPALI PARANTEZ EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
                     while (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
@@ -421,8 +430,7 @@ int main() {
                     if (a == 1) {
                         type = 3;
                         item[a] = '\0';
-                        //array[z] = item;
-                        //z++;
+                        //! DİĞER OPERATÖRLER EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     } else if (a != 1) {
                         error = true;
