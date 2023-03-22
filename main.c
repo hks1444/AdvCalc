@@ -12,7 +12,10 @@ int main() {
     //x=3+ STACK
     //x=(3+ STACK
     //x=3+% STACK
-    //% kodunu değiştirdikten sonra tüm % caselerini dene
+    //x=(3+% STACK
+    //x= %5 (SADECE TEK BOŞLUK VARKEN HATA VERİYOR) (% YOKKEN HATA VERİYOR)
+    //not(0+((3+5)) SEGMENTATION FAULT
+    //x==3
     char lineFull[256];
     bool error;
     bool equals;
