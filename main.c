@@ -19,24 +19,33 @@ int main() {
     //tokenleme kısmından sonra
     //string kısmında boşluk vs sorunları çöz
     //xor (a),c (bunu stack çözebilir)
-    //=xor(a,c)
-    //xor(a,b,c)x*y
-    // > printlemeye bak
-    //  = olunca sorun yok
-    //boş inputta right==null kısmı çalışmamalı
     //='den sonra hiçbir şey yoksa error ver
-
-    char line[256];
-    while (fgets(line, sizeof(line), stdin)) {
+    //x=((5) BU ERRORU STACK KONTROL EDECEK
+    //rs=2 error kontrol
+    //x=3+
+    //x=(3+
+    //x=3+% iken hata veriyor ÇOK SAÇMAAAAA
+    //% kodunu değiştirdikten sonra tüm % caselerini dene
+    //bir de orada line nasıl değişiyor bunu incele
+    char lineFull[256];
+    bool error;
+    //bool first = true;
+    while (true) {
         char *left;
         char *right;
         char *third;
-        bool error = false;
-        if (line == NULL) { //bu niye böyle anlamadım, hoca böyle yazdı
+        char *line;
+        error = false;
+        printf("> ");
+        char * deneme = "No time to die";
+
+        if (fgets(lineFull, sizeof(lineFull), stdin) == NULL) { //bu niye böyle anlamadım, hoca böyle yazdı
             break;
         } else {
-            strtok(line, "%");
+            line = strtok(lineFull, "%"); //burada line objesi değişmemiş olabilir, bunu kontrol et
+            printf("%s\n", line);
             left = strtok(line, "=");
+
             right = strtok(NULL, "=");
             third = strtok(NULL, "=");
             if (third != NULL) {
@@ -49,16 +58,16 @@ int main() {
         if (right != NULL) {
             //SOL TARAFI OKUMA VE HATA KONTROL ETME KISMI BURASI
             int i = 0;
-            int length = strlen(left); //buna -1 koymak da gerekebilir, kafam karıştı
+            int length = strlen(left);
             while (left[i] == ' ') {
                 i++;
                 if (i == length - 1) {
-                    printf("Error2!\n");
                     error = true;
                     break;
                 }
             }
             if (error) {
+                printf("Error!\n");
                 continue;
             }
             variable = strtok(left, " ");
@@ -76,21 +85,17 @@ int main() {
             while (*po != '\0') {
                 if (!isalpha(*po)) {
                     error = true;
-                    printf("Error6!\n");
                     break;
                 }
                 po++;
             }
-            if (error) {
-                continue;
-            }
             if (strcmp(variable, "xor") == 0 || strcmp(variable, "ls") == 0 || strcmp(variable, "rs") == 0 ||
-                strcmp(variable, "lr") == 0 ||
-                strcmp(variable, "rr") == 0 || strcmp(variable, "not") == 0) {
-                printf("Error7!\n");
+                strcmp(variable, "lr") == 0 || strcmp(variable, "rr") == 0 || strcmp(variable, "not") == 0) {
+                error = true;
                 continue;
             }
             if (error) {
+                printf("Error!\n");
                 continue;
             }
             //BUNDAN SONRA SAĞ TARAFIN KODU GELECEK
@@ -98,39 +103,35 @@ int main() {
             int length2 = strlen(right);
             while (right[k] == ' ') {
                 k++;
-                if (k == length2 - 1) { //burada length-1 vs durumlar da olabilir
-                    printf("Error4!\n");
+                if (k == length2 - 1) {
                     error = true;
                     break;
                 }
             }
             if (error) {
+                printf("Error!\n");
                 continue;
             }
-
-            //burada ilk şey operator olamaz
             //buradaki atama nasıl olacak
             char *nsRight = parseAfterLeftStrip(k, right, &error);
             if (error) {
                 printf("Error5!\n");
                 continue;
             } else {
-                //burada right'ı traverse edip tek tek bileşenlerine ayıracağız
                 char *p = nsRight;
                 char *array[256]; //YOK EDİLECEK
                 int z = 0; //YOK EDİLECEK
                 int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
                 //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
                 int length3 = strlen(nsRight);
-                while (*p != '\n') {
+                while (*p != '\0') {
                     char *item = malloc(length3 + 1 * sizeof(char));
                     item[0] = '\0';
                     int a = 0;
                     while (isalpha(*p)) {
-                        if (type == 1 || type == 2) {
+                        if (type == 1 || type == 2 || type == 6) {
                             a=0;
                             error = true;
-                            printf("Error19!\n");
                             break;
                         }
                         item[a++] = *p;
@@ -141,44 +142,48 @@ int main() {
                         if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 || strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
                             type = 4;
                             if (*p != '(') {
-                                printf("Error13!\n");
                                 error = true;
                                 break;
                             } else {
-                                //burada hata kontrolü yapmamız gerekiyor ama şimdi yapacağım kontrol bunu başaramazsa yapacağım
-                                //şu anki durumda parantez sayma olayının işe yarayabileceğine inanıyorum
                                 //operator listesine ekleme yap
                                 char *p2 = p;
                                 p2++;
                                 int parenthesis = 1;
+                                int function;
+                                if (strcmp(item, "not") == 0) {
+                                    function = 0;
+                                } else {
+                                    function = 1;
+                                }
                                 int comma = 0;
                                 while (parenthesis > 0) {
-                                    //buraya bir yere string bittiyse ama parenthesis 0 değilse error ekle
-                                    //eğer bu kodu parantez yerine fonksiyon için yaparsan garantili olmuş olur ama böyle de fena değil sanki
-                                    // xor(a),c BUNU ÇÖZMEMİZ LAZIM
-                                    // x = xor(a,ls(c)) BUNU DA
                                     if (*p2 == '(') {
                                         parenthesis++;
+                                        p2--;
+                                        if (*p2 == 'r' || *p2 == 's') {
+                                            function++;
+                                        }
+                                        p2++;
                                     } else if (*p2 == ',') {
                                         comma++;
                                     }
-                                    if (comma > parenthesis) {
-                                        printf("Error22!\n");
+                                    if (comma > function) {
                                         error = true;
                                         break;
                                     }
                                     if (*p2 == ')') {
                                         parenthesis--;
-                                        comma--;
                                     }
                                     p2++;
                                 }
+                                if (comma != function) {
+                                    error = true;
+                                }
                             }
                         } else {
-                            //o zaman variable
+                            //variable
                             type = 1;
                             if (*p == '(') {
-                                printf("Error14!\n");
                                 error = true;
                                 break;
                             } else {
@@ -186,18 +191,14 @@ int main() {
                             }
                         }
                         if (error) {
-                            continue;
+                            break;
                         }
-                        array[z] = item;
-                        z++;
                         continue;
                     }
-                    //a = 0;
                     while (isdigit(*p)) {
-                        if (type == 1 || type == 2) {
+                        if (type == 1 || type == 2 || type == 6) {
                             a=0;
                             error = true;
-                            printf("Error15\n");
                             break;
                         }
                         item[a++] = *p;
@@ -206,15 +207,12 @@ int main() {
                     if (a > 0) {
                         type = 2;
                         item[a] = '\0';
-                        array[z] = item;
-                        z++;
                         continue;
                     }
                     while (*p == '(') {
                         if (type == 1 || type == 2 || type == 6) {
                             a=0;
                             error = true;
-                            printf("Error21!\n");
                             break;
                         }
                         item[a++] = *p;
@@ -224,15 +222,12 @@ int main() {
                     if (a>0) {
                         type = 5;
                         item[a] = '\0';
-                        array[z] = item;
-                        z++;
                         continue;
                     }
                     while (*p == ')') {
                         if (type == 0 || type == 3 || type == 5) {
                             a=0;
                             error = true;
-                            printf("Error17!\n");
                             break;
                         }
                         item[a++] = *p;
@@ -242,15 +237,12 @@ int main() {
                     if (a>0) {
                         type = 6;
                         item[a] = '\0';
-                        array[z] = item;
-                        z++;
                         continue;
                     }
                     while (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
-                        if (type == 0 || type == 3) {
+                        if (type == 0 || type == 3 || type == 5) {
                             a=0;
                             error = true;
-                            printf("Error20!\n");
                             break;
                         }
                         item[a++] = *p;
@@ -259,38 +251,210 @@ int main() {
                     if (a==1) {
                         type = 3;
                         item[a] = '\0';
-                        array[z] = item;
-                        z++;
                         continue;
                     } else if (a!=1) {
-                        printf("Error!16\n");
                         error =true;
                     }
                     if (error) {
-                        continue;
+                        break;
                     }
                 }
-                for (int x = 0; x < 256; x++) {
-                    printf("%s\n", array[x]);
+                if (error) {
+                    printf("Error!\n");
+                    continue;
                 }
             }
         }
 
 
         if (right == NULL) {
-            printf("no equal sign");
             //DİĞER BLOKTAKİ KOD BİTİNCE BURAYA DA GELECEK
-            //!!! RIGHT VE ONUNLA ALAKALI HER ŞEYİ DEĞİŞTİRMEMİZ LAZIM
+            //! RIGHT VE ONUNLA ALAKALI HER ŞEYİ DEĞİŞTİRMEMİZ LAZIM
 
             //RHS'DE BURADA YAPTIĞIMIZ ŞEYİN AYNISI YAPILACAK
             //TEK FARK BURADA SONUÇ PRINT, ORADA ASSIGN
-
+            //SOL TARAFI OKUMA VE HATA KONTROL ETME KISMI BURASI
+            int i = 0;
+            int length = strlen(left);
+            while (left[i] == ' ') {
+                i++;
+                if (i == length - 1) {
+                    error = true;
+                    break;
+                }
+            }
+            if (error) {
+                //burada print yapmayacağız
+                continue;
+            }
+            //BUNDAN SONRA SAĞ TARAFIN KODU GELECEK
+            char *nsLeft = parseAfterLeftStrip(i, left, &error);
+            if (error) {
+                printf("Error5!\n");
+                continue;
+            } else {
+                char *p = nsLeft;
+                //char *array[256]; //YOK EDİLECEK
+                //int z = 0; //YOK EDİLECEK
+                int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
+                //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
+                int length3 = strlen(nsLeft);
+                while (*p != '\n') {
+                    char *item = malloc(length3 + 1 * sizeof(char));
+                    item[0] = '\0';
+                    int a = 0;
+                    while (isalpha(*p)) {
+                        if (type == 1 || type == 2 || type == 6) {
+                            a = 0;
+                            error = true;
+                            break;
+                        }
+                        item[a++] = *p;
+                        p++;
+                    }
+                    if (a > 0) {
+                        item[a] = '\0';
+                        if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 ||
+                            strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
+                            type = 4;
+                            if (*p != '(') {
+                                //printf("Error13!\n");
+                                error = true;
+                                break;
+                            } else {
+                                //operator listesine ekleme yap
+                                char *p2 = p;
+                                p2++;
+                                int parenthesis = 1;
+                                int function;
+                                if (strcmp(item, "not") == 0) {
+                                    function = 0;
+                                } else {
+                                    function = 1;
+                                }
+                                int comma = 0;
+                                while (parenthesis > 0) {
+                                    if (*p2 == '(') {
+                                        parenthesis++;
+                                        p2--;
+                                        if (*p2 == 'r' || *p2 == 's') {
+                                            function++;
+                                        }
+                                        p2++;
+                                    } else if (*p2 == ',') {
+                                        comma++;
+                                    }
+                                    if (comma > function) {
+                                        error = true;
+                                        break;
+                                    }
+                                    if (*p2 == ')') {
+                                        parenthesis--;
+                                    }
+                                    p2++;
+                                }
+                                if (comma != function) {
+                                    error = true;
+                                }
+                            }
+                        } else {
+                            //variable
+                            type = 1;
+                            if (*p == '(') {
+                                error = true;
+                                break;
+                            } else {
+                                //sayı listesine ekleme yap
+                            }
+                        }
+                        if (error) {
+                            break;
+                        }
+                        continue;
+                    }
+                    while (isdigit(*p)) {
+                        if (type == 1 || type == 2 || type == 6) {
+                            a = 0;
+                            error = true;
+                            break;
+                        }
+                        item[a++] = *p;
+                        p++;
+                    }
+                    if (a > 0) {
+                        type = 2;
+                        item[a] = '\0';
+                        //array[z] = item;
+                        //z++;
+                        continue;
+                    }
+                    while (*p == '(') {
+                        if (type == 1 || type == 2 || type == 6) {
+                            a = 0;
+                            error = true;
+                            break;
+                        }
+                        item[a++] = *p;
+                        p++;
+                        break;
+                    }
+                    if (a > 0) {
+                        type = 5;
+                        item[a] = '\0';
+                        //array[z] = item;
+                        //z++;
+                        continue;
+                    }
+                    while (*p == ')') {
+                        if (type == 0 || type == 3 || type == 5) {
+                            a = 0;
+                            error = true;
+                            break;
+                        }
+                        item[a++] = *p;
+                        p++;
+                        break;
+                    }
+                    if (a > 0) {
+                        type = 6;
+                        item[a] = '\0';
+                        //array[z] = item;
+                        //z++;
+                        continue;
+                    }
+                    while (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
+                        if (type == 0 || type == 3 || type == 5) {
+                            a = 0;
+                            error = true;
+                            break;
+                        }
+                        item[a++] = *p;
+                        p++;
+                    }
+                    if (a == 1) {
+                        type = 3;
+                        item[a] = '\0';
+                        //array[z] = item;
+                        //z++;
+                        continue;
+                    } else if (a != 1) {
+                        error = true;
+                    }
+                    if (error) {
+                        break;
+                    }
+                }
+                if (error) {
+                    printf("Error!\n");
+                    continue;
+                }
+            }
         }
     }
 }
 //boş string returnunu değerlendirmemiz lazım
 //error da olabilir, düz devam da
-char* parseAfterLeftStrip (int i, char *side, bool *error) { //buradaki error pointer vb. sebeplerden ötürü yanlış olabilir
+char* parseAfterLeftStrip (int i, char *side, bool *error) {
     int len = strlen(side);
     bool ch = false;
     bool sp = false;
@@ -325,16 +489,3 @@ char* parseAfterLeftStrip (int i, char *side, bool *error) { //buradaki error po
     }
     return equation;
 }
-
-
-
-/* variable token olmayacaksa burası
-char variable[256];
-int a = i;
-for (; left[i] != ' '; i++) {
-    variable[i-a] = left[i];
-}
-//variable name oluştur
-variable[i-a] = '\0';
-printf("%s", variable);
-*/
