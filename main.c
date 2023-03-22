@@ -7,13 +7,14 @@
 char* parseAfterLeftStrip (int i, char *side, bool *error);
 
 int main() {
-    //TODO ERRORS
     //x=((5) STACK
     //x=3+ STACK
     //x=(3+ STACK
     //x=3+% STACK
     //x=(3+% STACK
+    //TODO ERRORS
     //x= %5 (SADECE TEK BOŞLUK VARKEN HATA VERİYOR) (% YOKKEN HATA VERİYOR)
+    //x=% segmentation
     //not(0+((3+5)) SEGMENTATION FAULT
     //x==3
     char lineFull[256];
@@ -44,7 +45,12 @@ int main() {
         }
         char *variable;
         char *variable2;
-        if (right != NULL) {
+
+
+
+
+
+        if (right != NULL && strcmp(right, "\n") != 0 && strcmp(right, " ") != 0) {
             //! BU IF'İN İÇİNDE BULDUĞUMUZ DEĞER variable DEĞİŞKENİNE HASHLENECEK
             int i = 0;
             int length = strlen(left);
@@ -254,7 +260,10 @@ int main() {
                 }
             }
         }
-        if (right == NULL || strcmp(right, "\n") == 0) {
+
+
+        else {
+        //else if (right == NULL || strcmp(right, "\n") == 0) {
             if (equals) {
                 printf("Error!\n");
                 continue;
