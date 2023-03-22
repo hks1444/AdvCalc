@@ -8,30 +8,29 @@ char* parseAfterLeftStrip (int i, char *side, bool *error);
 
 int main() {
     //TODO ERRORS
-    //x=   (eşittirden sonra boşluk yok)
     //x=((5) STACK
-    //rs=2
     //x=3+ STACK
     //x=(3+ STACK
     //x=3+% STACK
     //% kodunu değiştirdikten sonra tüm % caselerini dene
     char lineFull[256];
     bool error;
-    //bool first = true;
+    bool equals;
     while (true) {
         char *left;
         char *right;
         char *third;
         char *line;
         error = false;
+        equals = false;
         printf("> ");
-        char * deneme = "\0";
-
         if (fgets(lineFull, sizeof(lineFull), stdin) == NULL) { //bu niye böyle anlamadım, hoca böyle yazdı
             break;
         } else {
             line = strtok(lineFull, "%"); //burada line objesi değişmemiş olabilir, bunu kontrol et
-            //printf("%s\n", line);
+            if (strchr(line, '=')) {
+                equals = true;
+            }
             left = strtok(line, "=");
             right = strtok(NULL, "=");
             third = strtok(NULL, "=");
@@ -42,7 +41,9 @@ int main() {
         }
         char *variable;
         char *variable2;
-        if (right != NULL) {
+        if (right != NULL //|| strcmp(right, "\n")==0
+        ) {
+        //if (strcmp(left, lineFull) == 0) {
             //! BU IF'İN İÇİNDE BULDUĞUMUZ DEĞER variable DEĞİŞKENİNE HASHLENECEK
             int i = 0;
             int length = strlen(left);
@@ -78,10 +79,6 @@ int main() {
             }
             if (strcmp(variable, "xor") == 0 || strcmp(variable, "ls") == 0 || strcmp(variable, "rs") == 0 ||
                 strcmp(variable, "lr") == 0 || strcmp(variable, "rr") == 0 || strcmp(variable, "not") == 0) {
-                error = true;
-                continue;
-            }
-            if (error) {
                 printf("Error!\n");
                 continue;
             }
@@ -261,7 +258,11 @@ int main() {
         }
 
 
-        if (right == NULL) {
+        if (right == NULL || strcmp(right, "\n") == 0) {
+            if (equals) {
+                printf("Error!\n");
+                continue;
+            }
             //DİĞER BLOKTAKİ KOD BİTİNCE BURAYA DA GELECEK
             //! RIGHT VE ONUNLA ALAKALI HER ŞEYİ DEĞİŞTİRMEMİZ LAZIM
 
