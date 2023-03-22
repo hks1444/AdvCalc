@@ -7,26 +7,14 @@
 char* parseAfterLeftStrip (int i, char *side, bool *error);
 
 int main() {
-    //yan yana char ve sayı durumunu handle'la
-        //isalphanum yazan kısmı düzenle
-    //error çözümlerini elinden geldiğince stack'e bırakma
-    //sondaki parçalama kısmında operatorlarla ilgili sorun var
-
     //TODO ERRORS
-    //açık parantez (stacke de salarsam benim kod döngüden çıkmaz)
-    //EŞİTTİRSİZ DURUMLARDA KOD YOK, O YÜZDEN ŞİMDİLİK SAL
-    //neyden sonra ne geleceğine göre yapmamız lazım sanırım
-    //tokenleme kısmından sonra
-    //string kısmında boşluk vs sorunları çöz
-    //xor (a),c (bunu stack çözebilir)
-    //='den sonra hiçbir şey yoksa error ver
-    //x=((5) BU ERRORU STACK KONTROL EDECEK
-    //rs=2 error kontrol
-    //x=3+
-    //x=(3+
-    //x=3+% iken hata veriyor ÇOK SAÇMAAAAA
+    //x=   (eşittirden sonra boşluk yok)
+    //x=((5) STACK
+    //rs=2
+    //x=3+ STACK
+    //x=(3+ STACK
+    //x=3+% STACK
     //% kodunu değiştirdikten sonra tüm % caselerini dene
-    //bir de orada line nasıl değişiyor bunu incele
     char lineFull[256];
     bool error;
     //bool first = true;
@@ -37,15 +25,14 @@ int main() {
         char *line;
         error = false;
         printf("> ");
-        char * deneme = "No time to die";
+        char * deneme = "\0";
 
         if (fgets(lineFull, sizeof(lineFull), stdin) == NULL) { //bu niye böyle anlamadım, hoca böyle yazdı
             break;
         } else {
             line = strtok(lineFull, "%"); //burada line objesi değişmemiş olabilir, bunu kontrol et
-            printf("%s\n", line);
+            //printf("%s\n", line);
             left = strtok(line, "=");
-
             right = strtok(NULL, "=");
             third = strtok(NULL, "=");
             if (third != NULL) {
@@ -119,12 +106,12 @@ int main() {
                 continue;
             } else {
                 char *p = nsRight;
-                char *array[256]; //YOK EDİLECEK
-                int z = 0; //YOK EDİLECEK
+                //char *array[256]; //YOK EDİLECEK
+                //int z = 0; //YOK EDİLECEK
                 int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
                 //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
                 int length3 = strlen(nsRight);
-                while (*p != '\0') {
+                while (*p != '\n' && *p != '\0') {
                     char *item = malloc(length3 + 1 * sizeof(char));
                     item[0] = '\0';
                     int a = 0;
@@ -299,7 +286,7 @@ int main() {
                 int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
                 //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
                 int length3 = strlen(nsLeft);
-                while (*p != '\n') {
+                while (*p != '\0' && *p != '\n') {
                     char *item = malloc(length3 + 1 * sizeof(char));
                     item[0] = '\0';
                     int a = 0;
