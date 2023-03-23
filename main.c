@@ -7,34 +7,48 @@
 char* parseAfterLeftStrip (int i, char *side, bool *error);
 
 int main() {
-    //x=((5) STACK
-    //x=3+ STACK
-    //x=(3+ STACK
-    //x=3+% STACK
-    //x=(3+% STACK
     //TODO ERRORS
-    //x= %5 (SADECE TEK BOŞLUK VARKEN HATA VERİYOR) (% YOKKEN HATA VERİYOR)
-    //x=% segmentation
-    //not(0+((3+5)) SEGMENTATION FAULT
-    //x==3
-    char lineFull[256];
+    //x=3+ STACK
+    //x=3+% STACK
     bool error;
     bool equals;
     while (true) {
         char *left;
         char *right;
         char *third;
-        char *line;
+        char line[256];
         error = false;
         equals = false;
         printf("> ");
-        if (fgets(lineFull, sizeof(lineFull), stdin) == NULL) {
+        if (fgets(line, sizeof(line), stdin) == NULL) {
             break;
         } else {
-            line = strtok(lineFull, "%");
-            if (strchr(line, '=')) {
-                equals = true;
+            char *p = line;
+            int par = 0;
+            while (*p != '\n') {
+                if (*p == '%') {
+                    *p = '\n';
+                    break;
+                } else if (*p == '=') {
+                    equals = true;
+                    char *p2 = p;
+                    p2++;
+                    if (*p2 == '=') {
+                        error = true;
+                        break;
+                    }
+                } else if (*p == '(') {
+                    par++;
+                } else if (*p == ')') {
+                    par--;
+                }
+                p++;
             }
+            if (par != 0 || error) {
+                printf("Error0!\n");
+                continue;
+            }
+
             left = strtok(line, "=");
             right = strtok(NULL, "=");
             third = strtok(NULL, "=");
@@ -45,10 +59,6 @@ int main() {
         }
         char *variable;
         char *variable2;
-
-
-
-
 
         if (right != NULL && strcmp(right, "\n") != 0 && strcmp(right, " ") != 0) {
             //! BU IF'İN İÇİNDE BULDUĞUMUZ DEĞER variable DEĞİŞKENİNE HASHLENECEK
