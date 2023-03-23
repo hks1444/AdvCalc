@@ -4,12 +4,14 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-char* parseAfterLeftStrip (int i, char *side, bool *error);
+char* parseAfterLeftStrip (char *side, int space);
 
 int main() {
     //TODO ERRORS
     //x=3+ STACK
     //x=3+% STACK
+    //yüzde varken hata veriyor
+    //x = not ( 0 + ((3*5)))
     bool error;
     bool equals;
     while (true) {
@@ -22,41 +24,79 @@ int main() {
         printf("> ");
         if (fgets(line, sizeof(line), stdin) == NULL) {
             break;
-        } else {
-            char *p = line;
-            int par = 0;
-            while (*p != '\n') {
-                if (*p == '%') {
-                    *p = '\n';
+        } //else {
+        char *p = line;
+        int par = 0;
+        bool ch = false;
+        bool sp = false;
+        bool nu = false;
+        int space = 0;
+        while (*p != '\n') {
+            if (*p == '%') {
+                *p = '\n';
+                break;
+            } else if (*p == '=') {
+                equals = true;
+                ch = false;
+                sp = false;
+                nu = false;
+                char *p2 = p;
+                p2++;
+                if (*p2 == '=') {
+                    error = true;
                     break;
-                } else if (*p == '=') {
-                    equals = true;
-                    char *p2 = p;
-                    p2++;
-                    if (*p2 == '=') {
-                        error = true;
-                        break;
-                    }
-                } else if (*p == '(') {
-                    par++;
-                } else if (*p == ')') {
-                    par--;
                 }
+            } else if (*p == '(') {
+                ch = false;
+                sp = false;
+                nu = false;
+                par++;
+            } else if (*p == ')') {
+                ch = false;
+                sp = false;
+                nu = false;
+                par--;
+            } else if (isalpha(*p)) {
+                if ((ch && sp) || (ch && nu)) {
+                    error = true;
+                    break;
+                }
+                ch = true;
+            } else if (isdigit(*p)) {
+                if ((nu && sp) || (nu && ch)) {
+                    error = true;
+                    break;
+                }
+                nu = true;
+            } else if (*p == ' ') {
+                if (ch || nu) {
+                    sp = true;
+                }
+                space++;
+            }
+            else if (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
+                ch = false;
+                sp = false;
+                nu = false;
+            } else { //legal olmayan karakterler buraya düşecek
+                error = true;
+                break;
+            }
                 p++;
-            }
-            if (par != 0 || error) {
-                printf("Error0!\n");
-                continue;
-            }
-
-            left = strtok(line, "=");
-            right = strtok(NULL, "=");
-            third = strtok(NULL, "=");
-            if (third != NULL) {
-                printf("Error1!\n");
-                continue;
-            }
         }
+        if (par != 0 || error) {
+            printf("Error0!\n");
+            continue;
+        }
+
+        left = strtok(line, "=");
+        right = strtok(NULL, "=");
+        third = strtok(NULL, "=");
+        if (third != NULL) {
+            printf("Error1!\n");
+            continue;
+        }
+        //}
         char *variable;
         char *variable2;
 
@@ -111,40 +151,38 @@ int main() {
                 printf("Error!\n");
                 continue;
             }
-            char *nsRight = parseAfterLeftStrip(k, right, &error);
+            char *nsRight = parseAfterLeftStrip(right, space);
             if (error) {
                 printf("Error5!\n");
                 continue;
             } else {
-                char *p = nsRight;
-                //char *array[256]; //YOK EDİLECEK
-                //int z = 0; //YOK EDİLECEK
+                char *p3 = nsRight;
                 int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
                 //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
                 int length3 = strlen(nsRight);
-                while (*p != '\n' && *p != '\0') {
+                while (*p3 != '\n' && *p3 != '\0') {
                     char *item = malloc(length3 + 1 * sizeof(char));
                     item[0] = '\0';
                     int a = 0;
-                    while (isalpha(*p)) {
+                    while (isalpha(*p3)) {
                         if (type == 1 || type == 2 || type == 6) {
                             a=0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p3;
+                        p3++;
                     }
                     if (a > 0) {
                         item[a] = '\0';
                         if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 || strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
                             type = 4;
-                            if (*p != '(') {
+                            if (*p3 != '(') {
                                 error = true;
                                 break;
                             } else {
-                                char *p2 = p;
-                                p2++;
+                                char *p4 = p3;
+                                p4++;
                                 int parenthesis = 1;
                                 int function;
                                 if (strcmp(item, "not") == 0) {
@@ -154,24 +192,24 @@ int main() {
                                 }
                                 int comma = 0;
                                 while (parenthesis > 0) {
-                                    if (*p2 == '(') {
+                                    if (*p4 == '(') {
                                         parenthesis++;
-                                        p2--;
-                                        if (*p2 == 'r' || *p2 == 's') {
+                                        p4--;
+                                        if (*p4 == 'r' || *p4 == 's') {
                                             function++;
                                         }
-                                        p2++;
-                                    } else if (*p2 == ',') {
+                                        p4++;
+                                    } else if (*p4 == ',') {
                                         comma++;
                                     }
                                     if (comma > function) {
                                         error = true;
                                         break;
                                     }
-                                    if (*p2 == ')') {
+                                    if (*p4 == ')') {
                                         parenthesis--;
                                     }
-                                    p2++;
+                                    p4++;
                                 }
                                 if (comma != function) {
                                     error = true;
@@ -180,7 +218,7 @@ int main() {
                         } else {
                             //variable
                             type = 1;
-                            if (*p == '(') {
+                            if (*p3 == '(') {
                                 error = true;
                                 break;
                             }
@@ -196,14 +234,14 @@ int main() {
                         }
                         continue;
                     }
-                    while (isdigit(*p)) {
+                    while (isdigit(*p3)) {
                         if (type == 1 || type == 2 || type == 6) {
                             a=0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p3;
+                        p3++;
                     }
                     if (a > 0) {
                         type = 2;
@@ -211,14 +249,14 @@ int main() {
                         //! SAYIYI EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
-                    while (*p == '(') {
+                    while (*p3 == '(') {
                         if (type == 1 || type == 2 || type == 6) {
                             a=0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p3;
+                        p3++;
                         break;
                     }
                     if (a>0) {
@@ -227,14 +265,14 @@ int main() {
                         //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
-                    while (*p == ')') {
+                    while (*p3 == ')') {
                         if (type == 0 || type == 3 || type == 5) {
                             a=0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p3;
+                        p3++;
                         break;
                     }
                     if (a>0) {
@@ -243,14 +281,14 @@ int main() {
                         //! KAPALI PARANTEZ EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
-                    while (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
+                    while (*p3 == '+' || *p3 == '*' || *p3 == '-' || *p3 == '&' || *p3 == '|' || *p3 == ',') {
                         if (type == 0 || type == 3 || type == 5) {
                             a=0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p3;
+                        p3++;
                     }
                     if (a==1) {
                         type = 3;
@@ -270,10 +308,7 @@ int main() {
                 }
             }
         }
-
-
         else {
-        //else if (right == NULL || strcmp(right, "\n") == 0) {
             if (equals) {
                 printf("Error!\n");
                 continue;
@@ -294,41 +329,39 @@ int main() {
                 continue;
             }
             //BUNDAN SONRA SAĞ TARAFIN KODU GELECEK
-            char *nsLeft = parseAfterLeftStrip(i, left, &error);
+            char *nsLeft = parseAfterLeftStrip(left, space);
             if (error) {
                 printf("Error5!\n");
                 continue;
             } else {
-                char *p = nsLeft;
-                //char *array[256]; //YOK EDİLECEK
-                //int z = 0; //YOK EDİLECEK
+                char *p5 = nsLeft;
                 int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
                 //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
                 int length3 = strlen(nsLeft);
-                while (*p != '\0' && *p != '\n') {
+                while (*p5 != '\0' && *p5 != '\n') {
                     char *item = malloc(length3 + 1 * sizeof(char));
                     item[0] = '\0';
                     int a = 0;
-                    while (isalpha(*p)) {
+                    while (isalpha(*p5)) {
                         if (type == 1 || type == 2 || type == 6) {
                             a = 0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p5;
+                        p5++;
                     }
                     if (a > 0) {
                         item[a] = '\0';
                         if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 ||
                             strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
                             type = 4;
-                            if (*p != '(') {
+                            if (*p5 != '(') {
                                 error = true;
                                 break;
                             } else {
-                                char *p2 = p;
-                                p2++;
+                                char *p6 = p5;
+                                p6++;
                                 int parenthesis = 1;
                                 int function;
                                 if (strcmp(item, "not") == 0) {
@@ -338,24 +371,24 @@ int main() {
                                 }
                                 int comma = 0;
                                 while (parenthesis > 0) {
-                                    if (*p2 == '(') {
+                                    if (*p6 == '(') {
                                         parenthesis++;
-                                        p2--;
-                                        if (*p2 == 'r' || *p2 == 's') {
+                                        p6--;
+                                        if (*p6 == 'r' || *p6 == 's') {
                                             function++;
                                         }
-                                        p2++;
-                                    } else if (*p2 == ',') {
+                                        p6++;
+                                    } else if (*p6 == ',') {
                                         comma++;
                                     }
                                     if (comma > function) {
                                         error = true;
                                         break;
                                     }
-                                    if (*p2 == ')') {
+                                    if (*p6 == ')') {
                                         parenthesis--;
                                     }
-                                    p2++;
+                                    p6++;
                                 }
                                 if (comma != function) {
                                     error = true;
@@ -363,7 +396,7 @@ int main() {
                             }
                         } else {
                             type = 1;
-                            if (*p == '(') {
+                            if (*p5 == '(') {
                                 error = true;
                                 break;
                             }
@@ -380,14 +413,14 @@ int main() {
                         }
                         continue;
                     }
-                    while (isdigit(*p)) {
+                    while (isdigit(*p5)) {
                         if (type == 1 || type == 2 || type == 6) {
                             a = 0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p5;
+                        p5++;
                     }
                     if (a > 0) {
                         type = 2;
@@ -395,14 +428,14 @@ int main() {
                         //! SAYIYI EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
-                    while (*p == '(') {
+                    while (*p5 == '(') {
                         if (type == 1 || type == 2 || type == 6) {
                             a = 0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p5;
+                        p5++;
                         break;
                     }
                     if (a > 0) {
@@ -411,14 +444,14 @@ int main() {
                         //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
-                    while (*p == ')') {
+                    while (*p5 == ')') {
                         if (type == 0 || type == 3 || type == 5) {
                             a = 0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p5;
+                        p5++;
                         break;
                     }
                     if (a > 0) {
@@ -427,14 +460,14 @@ int main() {
                         //! KAPALI PARANTEZ EKLENMESİ GEREKEN YERE EKLE
                         continue;
                     }
-                    while (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
+                    while (*p5 == '+' || *p5 == '*' || *p5 == '-' || *p5 == '&' || *p5 == '|' || *p5 == ',') {
                         if (type == 0 || type == 3 || type == 5) {
                             a = 0;
                             error = true;
                             break;
                         }
-                        item[a++] = *p;
-                        p++;
+                        item[a++] = *p5;
+                        p5++;
                     }
                     if (a == 1) {
                         type = 3;
@@ -456,32 +489,7 @@ int main() {
         }
     }
 }
-char* parseAfterLeftStrip (int i, char *side, bool *error) {
-    int len = strlen(side);
-    bool ch = false;
-    bool sp = false;
-    int space = 0;
-    for (; i < len - 1; i++) {
-        if (isalnum(side[i])) {
-            if (ch && sp) {
-                *error = true;
-                return "";
-            }
-            ch = true;
-        } else if (side[i] == ' ') {
-            if (ch) {
-                sp = true;
-            }
-            space++;
-        } else if (side[i] == '+' || side[i] == '*' || side[i] == '-' || side[i] == '&' || side[i] == '|' ||
-                   side[i] == ',' || side[i] == '(' || side[i] == ')') {
-            ch = false;
-            sp = false;
-        } else {
-            *error = true;
-            return "";
-        }
-    }
+char* parseAfterLeftStrip (char *side, int space) {
     char *equation = malloc(strlen(side)-space);
     equation[0] = '\0';
     char *p = strtok(side, " ");
