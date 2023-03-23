@@ -5,13 +5,10 @@
 #include <stdlib.h>
 
 char* parseAfterLeftStrip (char *side, int space);
-
-int main() {
     //TODO ERRORS
     //x=3+ STACK
     //x=3+% STACK
-    //yüzde varken hata veriyor
-    //x = not ( 0 + ((3*5)))
+int main() {
     bool error;
     bool equals;
     while (true) {
@@ -24,18 +21,23 @@ int main() {
         printf("> ");
         if (fgets(line, sizeof(line), stdin) == NULL) {
             break;
-        } //else {
+        }
         char *p = line;
         int par = 0;
         bool ch = false;
         bool sp = false;
         bool nu = false;
         int space = 0;
+        // in this loop we traverse through the input
         while (*p != '\n') {
             if (*p == '%') {
+                // we put \n when we see a comments so the program will ignore it
+                // the reason why we chose \n instead of \0 is, inputs without comments end with \n too
                 *p = '\n';
                 break;
             } else if (*p == '=') {
+                // when we see equals sign we approve that the input is an assignment input, this boolean will be used later
+                // other booleans will be explained later
                 equals = true;
                 ch = false;
                 sp = false;
@@ -43,15 +45,18 @@ int main() {
                 char *p2 = p;
                 p2++;
                 if (*p2 == '=') {
+                    // if there are two equal signs side by side we raise error
                     error = true;
                     break;
                 }
             } else if (*p == '(') {
+                // we keep the count of open parentheses here
                 ch = false;
                 sp = false;
                 nu = false;
                 par++;
             } else if (*p == ')') {
+                // we increase the number of open parentheses
                 ch = false;
                 sp = false;
                 nu = false;
