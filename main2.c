@@ -668,7 +668,7 @@ int main() {
             }
             char *nsLeft = parseAfterLeftStrip(left);
                 char *p5 = nsLeft;
-                int type = 0;
+                int type = 0; // 0=start / 1=string / 2=number / 3=operator / 4=function / 5 = open parenthesis / 6 = closed parenthesis
                 int length3 = strlen(nsLeft);
                 while (*p5 != '\0' && *p5 != '\n') {
                     char *item = malloc(length3 + 1 * sizeof(char));
@@ -676,10 +676,12 @@ int main() {
                     int a = 0;
                     while (isalpha(*p5)) {
                         if (type == 1 || type == 2 || type == 6) {
+                            // raise error if the letter is after a forbidden token
                             a = 0;
                             error = true;
                             break;
                         }
+                        // go until the end of token and store it in the variable token
                         item[a++] = *p5;
                         p5++;
                     }
@@ -687,15 +689,17 @@ int main() {
                         item[a] = '\0';
                         if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 ||
                             strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
+                            // if the token is a reserved word
                             type = 4;
                             if (*p5 != '(') {
+                                // if there is no open parenthesis after the function name raise error
                                 error = true;
                                 break;
                             } else {
                                 char *p6 = p5;
                                 p6++;
                                 int parenthesis = 1;
-                                int function;
+                                int function; // represents the encountered functions which take two arguments 
                                 if (strcmp(item, "not") == 0) {
                                     function = 0;
                                 } else {
@@ -703,6 +707,7 @@ int main() {
                                 }
                                 int comma = 0;
                                 while (parenthesis > 0) {
+                                    // traverse until the parentheses sequence ends
                                     if (*p6 == '(') {
                                         parenthesis++;
                                         p6--;
@@ -714,6 +719,7 @@ int main() {
                                         comma++;
                                     }
                                     if (comma > function) {
+                                        // if there are more commas the encountered functions raise error
                                         error = true;
                                         break;
                                     }
@@ -723,10 +729,12 @@ int main() {
                                     p6++;
                                 }
                                 if (comma != function) {
+                                    // if the number of commas is not equal to number of functions raise error
                                     error = true;
                                 }
                             }
                         } else {
+                            // the token is a variable
                             type = 1;
                             if (*p5 == '(') {
                                 error = true;
@@ -737,6 +745,7 @@ int main() {
                             break;
                         }  else {
                             if (type == 4) {  
+                                // push the item in funcs
                                 push(Funcs,item);
                             } else if (type == 1) {
                                 //this code gets variables value from the Hashmap and puhses the value to the stack for further operations
@@ -751,6 +760,7 @@ int main() {
                         continue;
                     }
                     while (isdigit(*p5)) {
+                        // take the variable token, check whether it is in the true place not, if there is no issue send it
                         if (type == 1 || type == 2 || type == 6) {
                             a = 0;
                             error = true;
@@ -766,6 +776,7 @@ int main() {
                         continue;
                     }
                     while (*p5 == '(') {
+                        // same thing as digit
                         if (type == 1 || type == 2 || type == 6) {
                             a = 0;
                             error = true;
@@ -787,6 +798,7 @@ int main() {
                         continue;
                     }
                     while (*p5 == ')') {
+                        // same thing as digit
                         if (type == 0 || type == 3 || type == 5) {
                             a = 0;
                             error = true;
@@ -803,6 +815,7 @@ int main() {
                         continue;
                     }
                     while (*p5 == '+' || *p5 == '*' || *p5 == '-' || *p5 == '&' || *p5 == '|' || *p5 == ',') {
+                        // same thing as digit but this time we only take one variable because otherwise we would miss some errors
                         if (type == 0 || type == 3 || type == 5) {
                             a = 0;
                             error = true;
@@ -863,6 +876,7 @@ int main() {
     }
 }
 char* parseAfterLeftStrip (char *side) {
+    /* this function removes the spaces from a given string, and returns the new string */
     char *equation = malloc(strlen(side));
     equation[0] = '\0';
     char *p = strtok(side, " ");
