@@ -277,9 +277,7 @@ long long postfix(Stack *stack,int* hks_error){
 }
 /*****************************************/
 char* parseAfterLeftStrip (char *side);
-    //TODO ERRORS
-    //x=3+ STACK
-    //x=3+% STACK
+
 int main() {
     bool error;
     bool equals;
@@ -357,13 +355,13 @@ int main() {
                 ch = false;
                 sp = false;
                 nu = false;
-            } else { //legal olmayan karakterler buraya düşecek
+            } else { // illegal characters will be detected here
                 error = true;
                 break;
             }
                 p++;
         }
-        if (par != 0 || error) {
+        if (par != 0 || error) { //if the number of parentheses don't match or any other gets detected, we raise error
             printf("Error!\n");
             continue;
         }
@@ -371,19 +369,19 @@ int main() {
         left = strtok(line, "=");
         right = strtok(NULL, "=");
         third = strtok(NULL, "=");
-        if (third != NULL) {
+        if (third != NULL) { // if the input can be splitted more than once there is a error
             printf("Error!\n");
             continue;
         }
-        //}
         char *variable;
         char *variable2;
 
         if (right != NULL && strcmp(right, "\n") != 0 && strcmp(right, " ") != 0) {
-            //! BU IF'İN İÇİNDE BULDUĞUMUZ DEĞER variable DEĞİŞKENİNE HASHLENECEK
+            // this if block works when we have to make an assignment
             int i = 0;
             int length = strlen(left);
             while (left[i] == ' ') {
+                // we check whether the LHS is empty or not
                 i++;
                 if (i == length - 1) {
                     error = true;
@@ -397,15 +395,18 @@ int main() {
             variable = strtok(left, " ");
             variable2 = strtok(NULL, " ");
             if (variable == NULL) {
+                // checks whether the LHS is empty or not
                 printf("Error!\n");
             }
             if (variable2 != NULL) {
+                // checks whether there is a space between chars in LHS
                 printf("Error!\n");
                 continue;
             }
             char *po = variable;
             while (*po != '\0') {
                 if (!isalpha(*po)) {
+                    // raise error if there a non-alphabetic character in variable name
                     error = true;
                     break;
                 }
@@ -413,12 +414,13 @@ int main() {
             }
             if (strcmp(variable, "xor") == 0 || strcmp(variable, "ls") == 0 || strcmp(variable, "rs") == 0 ||
                 strcmp(variable, "lr") == 0 || strcmp(variable, "rr") == 0 || strcmp(variable, "not") == 0) {
+                // raise error when the variable name is a reserved word
                 printf("Error!\n");
                 continue;
             }
-            //BUNDAN SONRA SAĞ TARAFIN KODU GELECEK
             int k = 0;
             int length2 = strlen(right);
+            // this part checks iterates through the RHS and raises error if the token is all empty
             char *p8 = right;
             char *r = malloc(length2*sizeof(char));
             while (*p8 != '\n') {
@@ -436,8 +438,7 @@ int main() {
             }
             char *nsRight = parseAfterLeftStrip(right);
                 char *p3 = nsRight;
-                int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
-                //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
+                int type = 0; // 0=start / 1=string / 2=number / 3=operator / 4=function / 5 = open parenthesis / 6 = closed parenthesis
                 int length3 = strlen(nsRight);
                 while (*p3 != '\n' && *p3 != '\0') {
                     char *item = malloc(length3 + 1 * sizeof(char));
@@ -445,25 +446,29 @@ int main() {
                     int a = 0;
                     while (isalpha(*p3)) {
                         if (type == 1 || type == 2 || type == 6) {
+                            // raise error if the letter is after a forbidden token
                             a=0;
                             error = true;
                             break;
                         }
+                        // go until the end of token and store it in the variable token
                         item[a++] = *p3;
                         p3++;
                     }
                     if (a > 0) {
                         item[a] = '\0';
                         if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 || strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
+                            // if the token is a reserved word
                             type = 4;
                             if (*p3 != '(') {
+                                // if there is no open parenthesis after the function name raise error
                                 error = true;
                                 break;
                             } else {
                                 char *p4 = p3;
                                 p4++;
                                 int parenthesis = 1;
-                                int function;
+                                int function; // represents the encountered functions which take two arguments 
                                 if (strcmp(item, "not") == 0) {
                                     function = 0;
                                 } else {
@@ -471,6 +476,7 @@ int main() {
                                 }
                                 int comma = 0;
                                 while (parenthesis > 0) {
+                                    // traverse until the parentheses sequence ends
                                     if (*p4 == '(') {
                                         parenthesis++;
                                         p4--;
@@ -482,6 +488,7 @@ int main() {
                                         comma++;
                                     }
                                     if (comma > function) {
+                                        // if there are more commas the encountered functions raise error
                                         error = true;
                                         break;
                                     }
@@ -491,11 +498,12 @@ int main() {
                                     p4++;
                                 }
                                 if (comma != function) {
+                                    // if the number of commas is not equal to number of functions raise error 
                                     error = true;
                                 }
                             }
                         } else {
-                            //variable
+                            // the token is a variable
                             type = 1;
                             if (*p3 == '(') {
                                 error = true;
@@ -506,10 +514,9 @@ int main() {
                             break;
                         } else {
                             if (type == 4) {
-                               //! FONKSİYONU EKLENMESİ GEREKEN YERE EKLE
+                                // push the item in funcs
                                 push(Funcs,item);
                             } else if (type == 1) {
-                                //! VARIABLE'I EKLENMESİ GEREKEN YERE EKLE
                                 //this code gets variables value from the Hashmap and puhses the value to the stack for further operations
                                 long long var = get(HashMap,item);
                                 char val[256];
@@ -522,6 +529,7 @@ int main() {
                         continue;
                     }
                     while (isdigit(*p3)) {
+                        // take the variable token, check whether it is in the true place not, if there is no issue send it
                         if (type == 1 || type == 2 || type == 6) {
                             a=0;
                             error = true;
@@ -533,11 +541,11 @@ int main() {
                     if (a > 0) {
                         type = 2;
                         item[a] = '\0';
-                        //! SAYIYI EKLENMESİ GEREKEN YERE EKLE
                         push_to_stack(Operator,Output,item);
                         continue;
                     }
                     while (*p3 == '(') {
+                        // same thing as digit
                         if (type == 1 || type == 2 || type == 6) {
                             a=0;
                             error = true;
@@ -550,7 +558,6 @@ int main() {
                     if (a>0) {
                         type = 5;
                         item[a] = '\0';
-                        //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
                         if(Funcs->size>0){
                             if(strcmp(peek(Funcs),"not")==0){//this handles not operation
                                 push(Operator, pop(Funcs));
@@ -560,6 +567,7 @@ int main() {
                         continue;
                     }
                     while (*p3 == ')') {
+                        // same thing as digit
                         if (type == 0 || type == 3 || type == 5) {
                             a=0;
                             error = true;
@@ -572,11 +580,11 @@ int main() {
                     if (a>0) {
                         type = 6;
                         item[a] = '\0';
-                        //! KAPALI PARANTEZ EKLENMESİ GEREKEN YERE EKLE
                         push_to_stack(Operator,Output,item);
                         continue;
                     }
                     while (*p3 == '+' || *p3 == '*' || *p3 == '-' || *p3 == '&' || *p3 == '|' || *p3 == ',') {
+                        // same thing as digit but this time we only take one variable because otherwise we would miss some errors
                         if (type == 0 || type == 3 || type == 5) {
                             a=0;
                             error = true;
@@ -588,7 +596,6 @@ int main() {
                     if (a==1) {
                         type = 3;
                         item[a] = '\0';
-                        //! DİĞER OPERATÖRLER EKLENMESİ GEREKEN YERE EKLE
                         if(strcmp(item,",")!=0) {
                             push_to_stack(Operator, Output, item);//pushes the functions to operator stack
                         }else{
@@ -639,12 +646,13 @@ int main() {
             /**************************************************************/
         }
         else {
+            // this part is the printing case, we do totally the same thing as RHS in assignment case
+            // the differences are commented
             if (equals) {
+                // raise error if there is an equal sign in the input
                 printf("Error!\n");
                 continue;
             }
-            //RHS'DE BURADA YAPTIĞIMIZ ŞEYİN AYNISI YAPILACAK
-            //TEK FARK BURADA SONUÇ PRINT, ORADA ASSIGN
             int i = 0;
             int length = strlen(left);
             while (left[i] == ' ') {
@@ -655,14 +663,12 @@ int main() {
                 }
             }
             if (error) {
-                //burada print yapmayacağız
+                // when the input is all empty don't raise error but continue
                 continue;
             }
-            //BUNDAN SONRA SAĞ TARAFIN KODU GELECEK
             char *nsLeft = parseAfterLeftStrip(left);
                 char *p5 = nsLeft;
-                int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
-                //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
+                int type = 0;
                 int length3 = strlen(nsLeft);
                 while (*p5 != '\0' && *p5 != '\n') {
                     char *item = malloc(length3 + 1 * sizeof(char));
@@ -730,12 +736,9 @@ int main() {
                         if (error) {
                             break;
                         }  else {
-                            if (type == 4) {
-                                //! FONKSİYONU EKLENMESİ GEREKEN YERE EKLE
+                            if (type == 4) {  
                                 push(Funcs,item);
                             } else if (type == 1) {
-                                //! VARIABLE'I EKLENMESİ GEREKEN YERE EKLE
-                                //! İSTERSEN HASH'TEN DEĞER ÇEKİP SAYIYI ATACAĞIN YER BURAYI
                                 //this code gets variables value from the Hashmap and puhses the value to the stack for further operations
                                 long long var = get(HashMap,item);
                                 char val[256];
@@ -759,7 +762,6 @@ int main() {
                     if (a > 0) {
                         type = 2;
                         item[a] = '\0';
-                        //! SAYIYI EKLENMESİ GEREKEN YERE EKLE
                         push_to_stack(Operator,Output,item);
                         continue;
                     }
@@ -776,7 +778,6 @@ int main() {
                     if (a > 0) {
                         type = 5;
                         item[a] = '\0';
-                        //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
                         if(Funcs->size>0){ //this handles not operation
                             if(strcmp(peek(Funcs),"not")==0){
                                 push(Operator, pop(Funcs));
@@ -798,7 +799,6 @@ int main() {
                     if (a > 0) {
                         type = 6;
                         item[a] = '\0';
-                        //! KAPALI PARANTEZ EKLENMESİ GEREKEN YERE EKLE
                         push_to_stack(Operator,Output,item);
                         continue;
                     }
@@ -814,7 +814,6 @@ int main() {
                     if (a == 1) {
                         type = 3;
                         item[a] = '\0';
-                        //! DİĞER OPERATÖRLER EKLENMESİ GEREKEN YERE EKLE
                         if(strcmp(item,",")!=0) {
                             push_to_stack(Operator, Output, item);//pushes the functions to operator stack
                         }else{
