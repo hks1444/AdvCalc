@@ -242,7 +242,7 @@ long long postfix(Stack *stack,int* hks_error){
     }
 }
 /*****************************************/
-char* parseAfterLeftStrip (char *side, int space);
+char* parseAfterLeftStrip (char *side);
     //TODO ERRORS
     //x=3+ STACK
     //x=3+% STACK
@@ -269,7 +269,6 @@ int main() {
         bool ch = false;
         bool sp = false;
         bool nu = false;
-        int space = 0;
         // in this loop we traverse through the input
         while (*p != '\n') {
             if (*p == '%') {
@@ -319,7 +318,6 @@ int main() {
                 if (ch || nu) {
                     sp = true;
                 }
-                space++;
             }
             else if (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
                 ch = false;
@@ -332,7 +330,7 @@ int main() {
                 p++;
         }
         if (par != 0 || error) {
-            printf("Error0!\n");
+            printf("Error!\n");
             continue;
         }
 
@@ -340,7 +338,7 @@ int main() {
         right = strtok(NULL, "=");
         third = strtok(NULL, "=");
         if (third != NULL) {
-            printf("Error1!\n");
+            printf("Error!\n");
             continue;
         }
         //}
@@ -365,10 +363,10 @@ int main() {
             variable = strtok(left, " ");
             variable2 = strtok(NULL, " ");
             if (variable == NULL) {
-                printf("Error18!\n");
+                printf("Error!\n");
             }
             if (variable2 != NULL) {
-                printf("Error3!\n");
+                printf("Error!\n");
                 continue;
             }
             char *po = variable;
@@ -387,22 +385,22 @@ int main() {
             //BUNDAN SONRA SAĞ TARAFIN KODU GELECEK
             int k = 0;
             int length2 = strlen(right);
-            while (right[k] == ' ') {
+            char *p8 = right;
+            char *r = malloc(length2*sizeof(char));
+            while (*p8 != '\n') {
+                r[k] = *p8;
                 k++;
-                if (k == length2 - 1) {
-                    error = true;
-                    break;
-                }
+                p8++;
+            }
+            r[k] = '\0';
+            if (strtok(r, " ") == NULL) {
+                error = true;
             }
             if (error) {
                 printf("Error!\n");
                 continue;
             }
-            char *nsRight = parseAfterLeftStrip(right, space);
-            if (error) {
-                printf("Error5!\n");
-                continue;
-            } else {
+            char *nsRight = parseAfterLeftStrip(right);
                 char *p3 = nsRight;
                 int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
                 //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
@@ -518,12 +516,12 @@ int main() {
                         type = 5;
                         item[a] = '\0';
                         //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
-                        push_to_stack(Operator,Output,item);
                         if(Funcs->size>0){
                             if(strcmp(peek(Funcs),"not")==0){
                                 push(Operator, pop(Funcs));
                             }
                         }
+                        push_to_stack(Operator,Output,item);
                         continue;
                     }
                     while (*p3 == ')') {
@@ -573,7 +571,6 @@ int main() {
                     printf("Error!\n");
                     continue;
                 }
-            }
             /*************************************************************/
             int error_hasan_kerem = 0;
             while (Operator->size>0){
@@ -585,7 +582,7 @@ int main() {
                 }
             }
             if(error_hasan_kerem==1){
-                printf("Error hks1!\n");
+                printf("Error!\n");
                 continue;
             }
             /*******/
@@ -595,7 +592,7 @@ int main() {
             }
             long long ans = postfix(Output,&hks_error);
             if(hks_error==1){
-                printf("Error hks!\n");
+                printf("Error!\n");
                 continue;
             }
             char* temp_name = malloc(sizeof  variable);
@@ -627,11 +624,7 @@ int main() {
                 continue;
             }
             //BUNDAN SONRA SAĞ TARAFIN KODU GELECEK
-            char *nsLeft = parseAfterLeftStrip(left, space);
-            if (error) {
-                printf("Error5!\n");
-                continue;
-            } else {
+            char *nsLeft = parseAfterLeftStrip(left);
                 char *p5 = nsLeft;
                 int type = 0; //0=start / 1=string / 2=number / 3=operator / 4=function
                 //4'ten sonra parantez olduğunu zaten kesinlikle belirttik
@@ -748,12 +741,12 @@ int main() {
                         type = 5;
                         item[a] = '\0';
                         //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
-                        push_to_stack(Operator,Output,item);
                         if(Funcs->size>0){
-                        if(strcmp(peek(Funcs),"not")==0){
-                            push(Operator, pop(Funcs));
+                            if(strcmp(peek(Funcs),"not")==0){
+                                push(Operator, pop(Funcs));
+                            }
                         }
-                        }
+                        push_to_stack(Operator,Output,item);
                         continue;
                     }
                     while (*p5 == ')') {
@@ -803,7 +796,7 @@ int main() {
                     printf("Error!\n");
                     continue;
                 }
-            }
+
             /*************************************************************/
             int error_hasan_kerem = 0;
             while (Operator->size>0){
@@ -815,7 +808,7 @@ int main() {
                 }
             }
             if(error_hasan_kerem==1){
-                printf("Error hks1!\n");
+                printf("Error!\n");
                 continue;
             }
             /*******/
@@ -825,18 +818,18 @@ int main() {
             }
             long long ans = postfix(Output,&hks_error);
             if(hks_error==1){
-                printf("Error hks!\n");
+                printf("Error!\n");
                 continue;
             }
-            printf("%lld",ans);
+            printf("%lld\n",ans);
             /*******/
             /**************************************************************/
 
         }
     }
 }
-char* parseAfterLeftStrip (char *side, int space) {
-    char *equation = malloc(strlen(side)-space);
+char* parseAfterLeftStrip (char *side) {
+    char *equation = malloc(strlen(side));
     equation[0] = '\0';
     char *p = strtok(side, " ");
     while (p != NULL) {
