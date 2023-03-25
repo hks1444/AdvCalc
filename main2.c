@@ -9,13 +9,16 @@
 #define stack_cap 256
 
 typedef struct {
+    //Stack element
     char *name;
 } Stack_Variable;
 typedef struct {
+    //Stack struct
     Stack_Variable *content;
     int size;
 } Stack;
 Stack *Stack_construct() {
+    //creates a stack
     Stack *stack = malloc(sizeof(Stack));
     stack->content = calloc(stack_cap, sizeof(Stack_Variable));
     stack->size=0;
@@ -23,28 +26,35 @@ Stack *Stack_construct() {
 }
 
 void push(Stack* stack,char* key){
+    //pushes an element at the top of the stack
     stack->content[stack->size++].name = key;
 }
 char* pop(Stack* stack){
+    //removes the element at the top of the stack and returns it
     return stack->content[--(stack->size)].name;
 }
 char* peek(Stack* stack){
+    //returns a copy of the element at the top of the stack
+    //the element is not removed
     char* ans = malloc(strlen(stack->content[(stack->size)-1].name)+1);
     ans = strcpy(ans,stack->content[(stack->size)-1].name);
     return ans;
 }
 
 typedef struct {
+    //key value pair in Hashmap
     long long value;
     char* name;
 } Hash_Variable;
 
 typedef struct {
+    //Hashmap struct
     Hash_Variable *entries;
     int capacity;
 } Map;
 
 long long hash(char *key) {
+    //calculates hash value of the key
     long long hash = 0;
     for(int i=0;i<strlen(key)-1;i++){
         hash = (hash << 2) + hash + key[i];
@@ -53,12 +63,14 @@ long long hash(char *key) {
 }
 
 Map *HashMap_construct() {
+    //creates a hashmap
     Map *map = malloc(sizeof(Map));
     map->capacity = MAP_CAPACITY;
     map->entries = calloc(MAP_CAPACITY, sizeof(Hash_Variable));
     return map;
 }
 void put(Map *map, char *key, long long value) {
+    //maps the value key pair on the hashmap
     long long index = hash(key) % map->capacity;
     while (map->entries[index].name != NULL) {
         if (strcmp(map->entries[index].name, key) == 0) {
@@ -71,6 +83,7 @@ void put(Map *map, char *key, long long value) {
     map->entries[index].name = key;
 }
 long long get(Map *map, char *key) {
+    //gets the value of given key which is mapped on hashmap
     long long index = hash(key) % map->capacity;
     while (map->entries[index].name != NULL) {
         if (strcmp(map->entries[index].name, key) == 0) {
@@ -84,6 +97,7 @@ long long get(Map *map, char *key) {
 /*****/
 /**** Helper Functions ************************/
 int isInt(char* key){
+    //checks whether the given string is only consists of digits
     int var = 0;
     for(int i=0;i< strlen(key);i++){
         if(isdigit(key[i])==0){
@@ -97,6 +111,7 @@ int isInt(char* key){
     return var;
 }
 int isVar(char* key){
+    //checks whether the given string is only consists of letters
     int var = 0;
     for(int i=0;i< strlen(key);i++){
         if(isalpha(key[i])==0){
@@ -106,12 +121,15 @@ int isVar(char* key){
     return var;
 }
 int is_Func(char* item){
+    //checks whether the given string is keyword(function)
     if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 || strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0){
         return 0;
     }
     return 1;
 }
 int precedence(char* key){
+    //returns order of precedence of given operator/function
+    //higher the number means it has more priority
     if (strcmp(key, "not") == 0){
         return 6;
     }else if (strcmp(key, "*") == 0){
@@ -136,6 +154,10 @@ int is_right_Parenthesis(char* key){
 }
 int push_to_stack(Stack* stack_operator,Stack* output,char* key){
     // 0 means no error 1 means error
+    /* this function converts in-fix notation to postfix notation
+     * If there is a function it is pushed to function stack in another part of program and
+     * it is given to this function if comma is encountered and function is pushed to operator stack according to precedence
+     */
     if(is_Func(key)==0){
         while(stack_operator->size>0){
             if(precedence(peek(stack_operator))>= precedence(key)){
@@ -152,9 +174,14 @@ int push_to_stack(Stack* stack_operator,Stack* output,char* key){
         }
         return 0;
     }else if(is_left_Parenthesis(key)==0){
+        //the left parenthesis is directly pushed to the operator stack
         push(stack_operator,key);
         return 0;
     }else if(is_right_Parenthesis(key)==0){
+        //if a right parenthesis is encountered elements are popped from operator stack
+        //until the popped element is left parenthesis
+        //then both left and the right parentheses are eliminated
+        //If there is no left parenthesis error is raised
         int error = 1;
         while(stack_operator->size>0){
             char* temp= pop(stack_operator);
@@ -167,9 +194,11 @@ int push_to_stack(Stack* stack_operator,Stack* output,char* key){
         }
         return error;
     }else if(isVar(key)==0|| isInt(key)==0){
+        // variables and integers are directly pushed to final stack
         push(output,key);
         return 0;
-    } else{//operator
+    } else{
+        //operators are pushed to operator stack according to precedence
         while(stack_operator->size>0){
             if(strcmp(peek(stack_operator),"(")==0){
                 break;
@@ -186,6 +215,11 @@ int push_to_stack(Stack* stack_operator,Stack* output,char* key){
 }
 
 long long postfix(Stack *stack,int* hks_error){
+    /*this function evaluates given stack of elements it stars by
+     * popping one element and pops one or two element if the popped element
+     * is function or operator
+     * else if the element is operand then value of the element is returned
+     */
     char* temp = pop(stack);
     long long ans;
     if(stack->size<0){
@@ -249,11 +283,11 @@ char* parseAfterLeftStrip (char *side);
 int main() {
     bool error;
     bool equals;
-    Map* HashMap = HashMap_construct();
+    Map* HashMap = HashMap_construct();//this hashmap contains variables and their corresponding value
     while (true) {
-        Stack* Operator = Stack_construct();
-        Stack* Output = Stack_construct();
-        Stack* Funcs = Stack_construct();
+        Stack* Operator = Stack_construct();//holds operators in the process of reordering of the elements to obtain postfix notation
+        Stack* Output = Stack_construct();//final stack that contains postfix notation of operation
+        Stack* Funcs = Stack_construct();//holds functions in the process of reordering of the elements to obtain postfix notation
         char *left;
         char *right;
         char *third;
@@ -476,6 +510,7 @@ int main() {
                                 push(Funcs,item);
                             } else if (type == 1) {
                                 //! VARIABLE'I EKLENMESİ GEREKEN YERE EKLE
+                                //this code gets variables value from the Hashmap and puhses the value to the stack for further operations
                                 long long var = get(HashMap,item);
                                 char val[256];
                                 sprintf(val, "%lld", var);
@@ -517,7 +552,7 @@ int main() {
                         item[a] = '\0';
                         //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
                         if(Funcs->size>0){
-                            if(strcmp(peek(Funcs),"not")==0){
+                            if(strcmp(peek(Funcs),"not")==0){//this handles not operation
                                 push(Operator, pop(Funcs));
                             }
                         }
@@ -555,7 +590,7 @@ int main() {
                         item[a] = '\0';
                         //! DİĞER OPERATÖRLER EKLENMESİ GEREKEN YERE EKLE
                         if(strcmp(item,",")!=0) {
-                            push_to_stack(Operator, Output, item);
+                            push_to_stack(Operator, Output, item);//pushes the functions to operator stack
                         }else{
                             push_to_stack(Operator, Output, pop(Funcs));
                         }
@@ -572,26 +607,26 @@ int main() {
                     continue;
                 }
             /*************************************************************/
-            int error_hasan_kerem = 0;
-            while (Operator->size>0){
+            int parentheses_error = 0;
+            while (Operator->size>0){//pushes everything to the output stack
                 if(is_left_Parenthesis(peek(Operator))==0){
-                    error_hasan_kerem = 1;
+                    parentheses_error = 1;//raises error if there is left parenthesis
                     break;
                 }else{
                     push(Output, pop(Operator));
                 }
             }
-            if(error_hasan_kerem==1){
+            if(parentheses_error==1){
                 printf("Error!\n");
                 continue;
             }
             /*******/
-            int hks_error = 0;
+            int operation_error = 0;
             if(Output->size==0){
-                continue;
+                continue; // continues if the input is empty
             }
-            long long ans = postfix(Output,&hks_error);
-            if(hks_error==1){
+            long long ans = postfix(Output,&operation_error);//calculates the final value and returns error value
+            if(operation_error==1){
                 printf("Error!\n");
                 continue;
             }
@@ -701,6 +736,7 @@ int main() {
                             } else if (type == 1) {
                                 //! VARIABLE'I EKLENMESİ GEREKEN YERE EKLE
                                 //! İSTERSEN HASH'TEN DEĞER ÇEKİP SAYIYI ATACAĞIN YER BURAYI
+                                //this code gets variables value from the Hashmap and puhses the value to the stack for further operations
                                 long long var = get(HashMap,item);
                                 char val[256];
                                 sprintf(val, "%lld", var);
@@ -741,7 +777,7 @@ int main() {
                         type = 5;
                         item[a] = '\0';
                         //! AÇIK PARANTEZİ EKLENMESİ GEREKEN YERE EKLE
-                        if(Funcs->size>0){
+                        if(Funcs->size>0){ //this handles not operation
                             if(strcmp(peek(Funcs),"not")==0){
                                 push(Operator, pop(Funcs));
                             }
@@ -780,7 +816,7 @@ int main() {
                         item[a] = '\0';
                         //! DİĞER OPERATÖRLER EKLENMESİ GEREKEN YERE EKLE
                         if(strcmp(item,",")!=0) {
-                            push_to_stack(Operator, Output, item);
+                            push_to_stack(Operator, Output, item);//pushes the functions to operator stack
                         }else{
                             push_to_stack(Operator, Output, pop(Funcs));
                         }
@@ -798,31 +834,30 @@ int main() {
                 }
 
             /*************************************************************/
-            int error_hasan_kerem = 0;
-            while (Operator->size>0){
+            int parentheses_error = 0;
+            while (Operator->size>0){//pushes everything to the output stack
                 if(is_left_Parenthesis(peek(Operator))==0){
-                    error_hasan_kerem = 1;
+                    parentheses_error = 1;//raises error if there is left parenthesis
                     break;
                 }else{
                     push(Output, pop(Operator));
                 }
             }
-            if(error_hasan_kerem==1){
+            if(parentheses_error==1){
                 printf("Error!\n");
                 continue;
             }
             /*******/
-            int hks_error = 0;
+            int operation_error = 0;
             if(Output->size==0){
-                continue;
+                continue; // continues if the input is empty
             }
-            long long ans = postfix(Output,&hks_error);
-            if(hks_error==1){
+            long long ans = postfix(Output,&operation_error);//calculates the final value and returns error value
+            if(operation_error==1){
                 printf("Error!\n");
                 continue;
             }
             printf("%lld\n",ans);
-            /*******/
             /**************************************************************/
 
         }
