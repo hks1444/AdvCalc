@@ -346,7 +346,7 @@ int main() {
                     break;
                 }
                 nu = true;
-            } else if (*p == ' ') {
+            } else if (isspace(*p)) {
                 if (ch || nu) {
                     sp = true;
                 }
@@ -380,7 +380,7 @@ int main() {
             // this if block works when we have to make an assignment
             int i = 0;
             int length = strlen(left);
-            while (left[i] == ' ') {
+            while (isspace(left[i])) {
                 // we check whether the LHS is empty or not
                 i++;
                 if (i == length - 1) {
@@ -655,7 +655,7 @@ int main() {
             }
             int i = 0;
             int length = strlen(left);
-            while (left[i] == ' ') {
+            while (isspace(left[i])) {
                 i++;
                 if (i == length - 1) {
                     error = true;
