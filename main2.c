@@ -351,6 +351,12 @@ int main() {
                     sp = true;
                 }
             }
+            else if (isspace(*p)) {
+                if (ch || nu) {
+                    sp = true;
+                }
+                *p = ' ';
+            }
             else if (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
                 ch = false;
                 sp = false;
