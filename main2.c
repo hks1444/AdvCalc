@@ -355,6 +355,7 @@ int main() {
                 if (ch || nu) {
                     sp = true;
                 }
+                // convert any space character to ' '
                 *p = ' ';
             }
             else if (*p == '+' || *p == '*' || *p == '-' || *p == '&' || *p == '|' || *p == ',') {
