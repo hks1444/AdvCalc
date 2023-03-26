@@ -204,7 +204,7 @@ int push_to_stack(Stack* stack_operator,Stack* output,char* key){
                 break;
             }
             if(precedence(peek(stack_operator))>= precedence(key)){
-                    push(output,pop(stack_operator));
+                push(output,pop(stack_operator));
             }else{
                 break;
             }
@@ -346,7 +346,7 @@ int main() {
                     break;
                 }
                 nu = true;
-            } else if (isspace(*p)) {
+            } else if (*p == ' ') {
                 if (ch || nu) {
                     sp = true;
                 }
@@ -359,7 +359,7 @@ int main() {
                 error = true;
                 break;
             }
-                p++;
+            p++;
         }
         if (par != 0 || error) { //if the number of parentheses don't match or any other gets detected, we raise error
             printf("Error!\n");
@@ -380,7 +380,7 @@ int main() {
             // this if block works when we have to make an assignment
             int i = 0;
             int length = strlen(left);
-            while (isspace(left[i])) {
+            while (left[i] == ' ') {
                 // we check whether the LHS is empty or not
                 i++;
                 if (i == length - 1) {
@@ -437,182 +437,182 @@ int main() {
                 continue;
             }
             char *nsRight = parseAfterLeftStrip(right);
-                char *p3 = nsRight;
-                int type = 0; // 0=start / 1=string / 2=number / 3=operator / 4=function / 5 = open parenthesis / 6 = closed parenthesis
-                int length3 = strlen(nsRight);
-                while (*p3 != '\n' && *p3 != '\0') {
-                    char *item = malloc(length3 + 1 * sizeof(char));
-                    item[0] = '\0';
-                    int a = 0;
-                    while (isalpha(*p3)) {
-                        if (type == 1 || type == 2 || type == 6) {
-                            // raise error if the letter is after a forbidden token
-                            a=0;
+            char *p3 = nsRight;
+            int type = 0; // 0=start / 1=string / 2=number / 3=operator / 4=function / 5 = open parenthesis / 6 = closed parenthesis
+            int length3 = strlen(nsRight);
+            while (*p3 != '\n' && *p3 != '\0') {
+                char *item = malloc(length3 + 1 * sizeof(char));
+                item[0] = '\0';
+                int a = 0;
+                while (isalpha(*p3)) {
+                    if (type == 1 || type == 2 || type == 6) {
+                        // raise error if the letter is after a forbidden token
+                        a=0;
+                        error = true;
+                        break;
+                    }
+                    // go until the end of token and store it in the variable token
+                    item[a++] = *p3;
+                    p3++;
+                }
+                if (a > 0) {
+                    item[a] = '\0';
+                    if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 || strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
+                        // if the token is a reserved word
+                        type = 4;
+                        if (*p3 != '(') {
+                            // if there is no open parenthesis after the function name raise error
                             error = true;
                             break;
-                        }
-                        // go until the end of token and store it in the variable token
-                        item[a++] = *p3;
-                        p3++;
-                    }
-                    if (a > 0) {
-                        item[a] = '\0';
-                        if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 || strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
-                            // if the token is a reserved word
-                            type = 4;
-                            if (*p3 != '(') {
-                                // if there is no open parenthesis after the function name raise error
-                                error = true;
-                                break;
+                        } else {
+                            char *p4 = p3;
+                            p4++;
+                            int parenthesis = 1;
+                            int function; // represents the encountered functions which take two arguments
+                            if (strcmp(item, "not") == 0) {
+                                function = 0;
                             } else {
-                                char *p4 = p3;
-                                p4++;
-                                int parenthesis = 1;
-                                int function; // represents the encountered functions which take two arguments 
-                                if (strcmp(item, "not") == 0) {
-                                    function = 0;
-                                } else {
-                                    function = 1;
-                                }
-                                int comma = 0;
-                                while (parenthesis > 0) {
-                                    // traverse until the parentheses sequence ends
-                                    if (*p4 == '(') {
-                                        parenthesis++;
-                                        p4--;
-                                        if (*p4 == 'r' || *p4 == 's') {
-                                            function++;
-                                        }
-                                        p4++;
-                                    } else if (*p4 == ',') {
-                                        comma++;
-                                    }
-                                    if (comma > function) {
-                                        // if there are more commas the encountered functions raise error
-                                        error = true;
-                                        break;
-                                    }
-                                    if (*p4 == ')') {
-                                        parenthesis--;
+                                function = 1;
+                            }
+                            int comma = 0;
+                            while (parenthesis > 0) {
+                                // traverse until the parentheses sequence ends
+                                if (*p4 == '(') {
+                                    parenthesis++;
+                                    p4--;
+                                    if (*p4 == 'r' || *p4 == 's') {
+                                        function++;
                                     }
                                     p4++;
+                                } else if (*p4 == ',') {
+                                    comma++;
                                 }
-                                if (comma != function) {
-                                    // if the number of commas is not equal to number of functions raise error 
+                                if (comma > function) {
+                                    // if there are more commas the encountered functions raise error
                                     error = true;
+                                    break;
                                 }
+                                if (*p4 == ')') {
+                                    parenthesis--;
+                                }
+                                p4++;
                             }
-                        } else {
-                            // the token is a variable
-                            type = 1;
-                            if (*p3 == '(') {
+                            if (comma != function) {
+                                // if the number of commas is not equal to number of functions raise error
                                 error = true;
-                                break;
                             }
                         }
-                        if (error) {
-                            break;
-                        } else {
-                            if (type == 4) {
-                                // push the item in funcs
-                                push(Funcs,item);
-                            } else if (type == 1) {
-                                //this code gets variables value from the Hashmap and puhses the value to the stack for further operations
-                                long long var = get(HashMap,item);
-                                char val[256];
-                                sprintf(val, "%lld", var);
-                                char *aaaaa = malloc(sizeof val);
-                                aaaaa = strcpy(aaaaa, val);
-                                push_to_stack(Operator,Output,aaaaa);
-                            }
-                        }
-                        continue;
-                    }
-                    while (isdigit(*p3)) {
-                        // take the variable token, check whether it is in the true place not, if there is no issue send it
-                        if (type == 1 || type == 2 || type == 6) {
-                            a=0;
+                    } else {
+                        // the token is a variable
+                        type = 1;
+                        if (*p3 == '(') {
                             error = true;
                             break;
                         }
-                        item[a++] = *p3;
-                        p3++;
-                    }
-                    if (a > 0) {
-                        type = 2;
-                        item[a] = '\0';
-                        push_to_stack(Operator,Output,item);
-                        continue;
-                    }
-                    while (*p3 == '(') {
-                        // same thing as digit
-                        if (type == 1 || type == 2 || type == 6) {
-                            a=0;
-                            error = true;
-                            break;
-                        }
-                        item[a++] = *p3;
-                        p3++;
-                        break;
-                    }
-                    if (a>0) {
-                        type = 5;
-                        item[a] = '\0';
-                        if(Funcs->size>0){
-                            if(strcmp(peek(Funcs),"not")==0){//this handles not operation
-                                push(Operator, pop(Funcs));
-                            }
-                        }
-                        push_to_stack(Operator,Output,item);
-                        continue;
-                    }
-                    while (*p3 == ')') {
-                        // same thing as digit
-                        if (type == 0 || type == 3 || type == 5) {
-                            a=0;
-                            error = true;
-                            break;
-                        }
-                        item[a++] = *p3;
-                        p3++;
-                        break;
-                    }
-                    if (a>0) {
-                        type = 6;
-                        item[a] = '\0';
-                        push_to_stack(Operator,Output,item);
-                        continue;
-                    }
-                    while (*p3 == '+' || *p3 == '*' || *p3 == '-' || *p3 == '&' || *p3 == '|' || *p3 == ',') {
-                        // same thing as digit but this time we only take one variable because otherwise we would miss some errors
-                        if (type == 0 || type == 3 || type == 5) {
-                            a=0;
-                            error = true;
-                            break;
-                        }
-                        item[a++] = *p3;
-                        p3++;
-                    }
-                    if (a==1) {
-                        type = 3;
-                        item[a] = '\0';
-                        if(strcmp(item,",")!=0) {
-                            push_to_stack(Operator, Output, item);//pushes the functions to operator stack
-                        }else{
-                            push_to_stack(Operator, Output, pop(Funcs));
-                        }
-                        continue;
-                    } else if (a!=1) {
-                        error =true;
                     }
                     if (error) {
                         break;
+                    } else {
+                        if (type == 4) {
+                            // push the item in funcs
+                            push(Funcs,item);
+                        } else if (type == 1) {
+                            //this code gets variables value from the Hashmap and puhses the value to the stack for further operations
+                            long long var = get(HashMap,item);
+                            char val[256];
+                            sprintf(val, "%lld", var);
+                            char *aaaaa = malloc(sizeof val);
+                            aaaaa = strcpy(aaaaa, val);
+                            push_to_stack(Operator,Output,aaaaa);
+                        }
                     }
-                }
-                if (error) {
-                    printf("Error!\n");
                     continue;
                 }
+                while (isdigit(*p3)) {
+                    // take the variable token, check whether it is in the true place not, if there is no issue send it
+                    if (type == 1 || type == 2 || type == 6) {
+                        a=0;
+                        error = true;
+                        break;
+                    }
+                    item[a++] = *p3;
+                    p3++;
+                }
+                if (a > 0) {
+                    type = 2;
+                    item[a] = '\0';
+                    push_to_stack(Operator,Output,item);
+                    continue;
+                }
+                while (*p3 == '(') {
+                    // same thing as digit
+                    if (type == 1 || type == 2 || type == 6) {
+                        a=0;
+                        error = true;
+                        break;
+                    }
+                    item[a++] = *p3;
+                    p3++;
+                    break;
+                }
+                if (a>0) {
+                    type = 5;
+                    item[a] = '\0';
+                    if(Funcs->size>0){
+                        if(strcmp(peek(Funcs),"not")==0){//this handles not operation
+                            push(Operator, pop(Funcs));
+                        }
+                    }
+                    push_to_stack(Operator,Output,item);
+                    continue;
+                }
+                while (*p3 == ')') {
+                    // same thing as digit
+                    if (type == 0 || type == 3 || type == 5) {
+                        a=0;
+                        error = true;
+                        break;
+                    }
+                    item[a++] = *p3;
+                    p3++;
+                    break;
+                }
+                if (a>0) {
+                    type = 6;
+                    item[a] = '\0';
+                    push_to_stack(Operator,Output,item);
+                    continue;
+                }
+                while (*p3 == '+' || *p3 == '*' || *p3 == '-' || *p3 == '&' || *p3 == '|' || *p3 == ',') {
+                    // same thing as digit but this time we only take one variable because otherwise we would miss some errors
+                    if (type == 0 || type == 3 || type == 5) {
+                        a=0;
+                        error = true;
+                        break;
+                    }
+                    item[a++] = *p3;
+                    p3++;
+                }
+                if (a==1) {
+                    type = 3;
+                    item[a] = '\0';
+                    if(strcmp(item,",")!=0) {
+                        push_to_stack(Operator, Output, item);//pushes the functions to operator stack
+                    }else{
+                        push_to_stack(Operator, Output, pop(Funcs));
+                    }
+                    continue;
+                } else if (a!=1) {
+                    error =true;
+                }
+                if (error) {
+                    break;
+                }
+            }
+            if (error) {
+                printf("Error!\n");
+                continue;
+            }
             /*************************************************************/
             int parentheses_error = 0;
             while (Operator->size>0){//pushes everything to the output stack
@@ -655,7 +655,7 @@ int main() {
             }
             int i = 0;
             int length = strlen(left);
-            while (isspace(left[i])) {
+            while (left[i] == ' ') {
                 i++;
                 if (i == length - 1) {
                     error = true;
@@ -667,183 +667,183 @@ int main() {
                 continue;
             }
             char *nsLeft = parseAfterLeftStrip(left);
-                char *p5 = nsLeft;
-                int type = 0; // 0=start / 1=string / 2=number / 3=operator / 4=function / 5 = open parenthesis / 6 = closed parenthesis
-                int length3 = strlen(nsLeft);
-                while (*p5 != '\0' && *p5 != '\n') {
-                    char *item = malloc(length3 + 1 * sizeof(char));
-                    item[0] = '\0';
-                    int a = 0;
-                    while (isalpha(*p5)) {
-                        if (type == 1 || type == 2 || type == 6) {
-                            // raise error if the letter is after a forbidden token
-                            a = 0;
+            char *p5 = nsLeft;
+            int type = 0; // 0=start / 1=string / 2=number / 3=operator / 4=function / 5 = open parenthesis / 6 = closed parenthesis
+            int length3 = strlen(nsLeft);
+            while (*p5 != '\0' && *p5 != '\n') {
+                char *item = malloc(length3 + 1 * sizeof(char));
+                item[0] = '\0';
+                int a = 0;
+                while (isalpha(*p5)) {
+                    if (type == 1 || type == 2 || type == 6) {
+                        // raise error if the letter is after a forbidden token
+                        a = 0;
+                        error = true;
+                        break;
+                    }
+                    // go until the end of token and store it in the variable token
+                    item[a++] = *p5;
+                    p5++;
+                }
+                if (a > 0) {
+                    item[a] = '\0';
+                    if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 ||
+                        strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
+                        // if the token is a reserved word
+                        type = 4;
+                        if (*p5 != '(') {
+                            // if there is no open parenthesis after the function name raise error
                             error = true;
                             break;
-                        }
-                        // go until the end of token and store it in the variable token
-                        item[a++] = *p5;
-                        p5++;
-                    }
-                    if (a > 0) {
-                        item[a] = '\0';
-                        if (strcmp(item, "xor") == 0 || strcmp(item, "not") == 0 || strcmp(item, "lr") == 0 ||
-                            strcmp(item, "rr") == 0 || strcmp(item, "rs") == 0 || strcmp(item, "ls") == 0) {
-                            // if the token is a reserved word
-                            type = 4;
-                            if (*p5 != '(') {
-                                // if there is no open parenthesis after the function name raise error
-                                error = true;
-                                break;
+                        } else {
+                            char *p6 = p5;
+                            p6++;
+                            int parenthesis = 1;
+                            int function; // represents the encountered functions which take two arguments
+                            if (strcmp(item, "not") == 0) {
+                                function = 0;
                             } else {
-                                char *p6 = p5;
-                                p6++;
-                                int parenthesis = 1;
-                                int function; // represents the encountered functions which take two arguments 
-                                if (strcmp(item, "not") == 0) {
-                                    function = 0;
-                                } else {
-                                    function = 1;
-                                }
-                                int comma = 0;
-                                while (parenthesis > 0) {
-                                    // traverse until the parentheses sequence ends
-                                    if (*p6 == '(') {
-                                        parenthesis++;
-                                        p6--;
-                                        if (*p6 == 'r' || *p6 == 's') {
-                                            function++;
-                                        }
-                                        p6++;
-                                    } else if (*p6 == ',') {
-                                        comma++;
-                                    }
-                                    if (comma > function) {
-                                        // if there are more commas the encountered functions raise error
-                                        error = true;
-                                        break;
-                                    }
-                                    if (*p6 == ')') {
-                                        parenthesis--;
+                                function = 1;
+                            }
+                            int comma = 0;
+                            while (parenthesis > 0) {
+                                // traverse until the parentheses sequence ends
+                                if (*p6 == '(') {
+                                    parenthesis++;
+                                    p6--;
+                                    if (*p6 == 'r' || *p6 == 's') {
+                                        function++;
                                     }
                                     p6++;
+                                } else if (*p6 == ',') {
+                                    comma++;
                                 }
-                                if (comma != function) {
-                                    // if the number of commas is not equal to number of functions raise error
+                                if (comma > function) {
+                                    // if there are more commas the encountered functions raise error
                                     error = true;
+                                    break;
                                 }
+                                if (*p6 == ')') {
+                                    parenthesis--;
+                                }
+                                p6++;
                             }
-                        } else {
-                            // the token is a variable
-                            type = 1;
-                            if (*p5 == '(') {
+                            if (comma != function) {
+                                // if the number of commas is not equal to number of functions raise error
                                 error = true;
-                                break;
                             }
                         }
-                        if (error) {
-                            break;
-                        }  else {
-                            if (type == 4) {  
-                                // push the item in funcs
-                                push(Funcs,item);
-                            } else if (type == 1) {
-                                //this code gets variables value from the Hashmap and puhses the value to the stack for further operations
-                                long long var = get(HashMap,item);
-                                char val[256];
-                                sprintf(val, "%lld", var);
-                                char *aaaaa = malloc(sizeof val);
-                                aaaaa = strcpy(aaaaa, val);
-                                push_to_stack(Operator,Output,aaaaa);
-                            }
-                        }
-                        continue;
-                    }
-                    while (isdigit(*p5)) {
-                        // take the variable token, check whether it is in the true place not, if there is no issue send it
-                        if (type == 1 || type == 2 || type == 6) {
-                            a = 0;
+                    } else {
+                        // the token is a variable
+                        type = 1;
+                        if (*p5 == '(') {
                             error = true;
                             break;
                         }
-                        item[a++] = *p5;
-                        p5++;
-                    }
-                    if (a > 0) {
-                        type = 2;
-                        item[a] = '\0';
-                        push_to_stack(Operator,Output,item);
-                        continue;
-                    }
-                    while (*p5 == '(') {
-                        // same thing as digit
-                        if (type == 1 || type == 2 || type == 6) {
-                            a = 0;
-                            error = true;
-                            break;
-                        }
-                        item[a++] = *p5;
-                        p5++;
-                        break;
-                    }
-                    if (a > 0) {
-                        type = 5;
-                        item[a] = '\0';
-                        if(Funcs->size>0){ //this handles not operation
-                            if(strcmp(peek(Funcs),"not")==0){
-                                push(Operator, pop(Funcs));
-                            }
-                        }
-                        push_to_stack(Operator,Output,item);
-                        continue;
-                    }
-                    while (*p5 == ')') {
-                        // same thing as digit
-                        if (type == 0 || type == 3 || type == 5) {
-                            a = 0;
-                            error = true;
-                            break;
-                        }
-                        item[a++] = *p5;
-                        p5++;
-                        break;
-                    }
-                    if (a > 0) {
-                        type = 6;
-                        item[a] = '\0';
-                        push_to_stack(Operator,Output,item);
-                        continue;
-                    }
-                    while (*p5 == '+' || *p5 == '*' || *p5 == '-' || *p5 == '&' || *p5 == '|' || *p5 == ',') {
-                        // same thing as digit but this time we only take one variable because otherwise we would miss some errors
-                        if (type == 0 || type == 3 || type == 5) {
-                            a = 0;
-                            error = true;
-                            break;
-                        }
-                        item[a++] = *p5;
-                        p5++;
-                    }
-                    if (a == 1) {
-                        type = 3;
-                        item[a] = '\0';
-                        if(strcmp(item,",")!=0) {
-                            push_to_stack(Operator, Output, item);//pushes the functions to operator stack
-                        }else{
-                            push_to_stack(Operator, Output, pop(Funcs));
-                        }
-                        continue;
-                    } else if (a != 1) {
-                        error = true;
                     }
                     if (error) {
                         break;
+                    }  else {
+                        if (type == 4) {
+                            // push the item in funcs
+                            push(Funcs,item);
+                        } else if (type == 1) {
+                            //this code gets variables value from the Hashmap and puhses the value to the stack for further operations
+                            long long var = get(HashMap,item);
+                            char val[256];
+                            sprintf(val, "%lld", var);
+                            char *aaaaa = malloc(sizeof val);
+                            aaaaa = strcpy(aaaaa, val);
+                            push_to_stack(Operator,Output,aaaaa);
+                        }
                     }
-                }
-                if (error) {
-                    printf("Error!\n");
                     continue;
                 }
+                while (isdigit(*p5)) {
+                    // take the variable token, check whether it is in the true place not, if there is no issue send it
+                    if (type == 1 || type == 2 || type == 6) {
+                        a = 0;
+                        error = true;
+                        break;
+                    }
+                    item[a++] = *p5;
+                    p5++;
+                }
+                if (a > 0) {
+                    type = 2;
+                    item[a] = '\0';
+                    push_to_stack(Operator,Output,item);
+                    continue;
+                }
+                while (*p5 == '(') {
+                    // same thing as digit
+                    if (type == 1 || type == 2 || type == 6) {
+                        a = 0;
+                        error = true;
+                        break;
+                    }
+                    item[a++] = *p5;
+                    p5++;
+                    break;
+                }
+                if (a > 0) {
+                    type = 5;
+                    item[a] = '\0';
+                    if(Funcs->size>0){ //this handles not operation
+                        if(strcmp(peek(Funcs),"not")==0){
+                            push(Operator, pop(Funcs));
+                        }
+                    }
+                    push_to_stack(Operator,Output,item);
+                    continue;
+                }
+                while (*p5 == ')') {
+                    // same thing as digit
+                    if (type == 0 || type == 3 || type == 5) {
+                        a = 0;
+                        error = true;
+                        break;
+                    }
+                    item[a++] = *p5;
+                    p5++;
+                    break;
+                }
+                if (a > 0) {
+                    type = 6;
+                    item[a] = '\0';
+                    push_to_stack(Operator,Output,item);
+                    continue;
+                }
+                while (*p5 == '+' || *p5 == '*' || *p5 == '-' || *p5 == '&' || *p5 == '|' || *p5 == ',') {
+                    // same thing as digit but this time we only take one variable because otherwise we would miss some errors
+                    if (type == 0 || type == 3 || type == 5) {
+                        a = 0;
+                        error = true;
+                        break;
+                    }
+                    item[a++] = *p5;
+                    p5++;
+                }
+                if (a == 1) {
+                    type = 3;
+                    item[a] = '\0';
+                    if(strcmp(item,",")!=0) {
+                        push_to_stack(Operator, Output, item);//pushes the functions to operator stack
+                    }else{
+                        push_to_stack(Operator, Output, pop(Funcs));
+                    }
+                    continue;
+                } else if (a != 1) {
+                    error = true;
+                }
+                if (error) {
+                    break;
+                }
+            }
+            if (error) {
+                printf("Error!\n");
+                continue;
+            }
 
             /*************************************************************/
             int parentheses_error = 0;
